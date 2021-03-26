@@ -48,9 +48,7 @@ async function revalidateResponse(event: FetchEvent): Promise<Response> {
 
 async function transform(url: string, code: string): Promise<string> {
   const newHash = hash(code);
-
   const header = `/* SWDEV-HASH:${newHash} */\n`;
-
   if (url.endsWith(".ts") || url.endsWith(".tsx")) {
     const result = ts.transpile(code, {
       target: ts.ScriptTarget.ES2019,
@@ -94,21 +92,24 @@ async function respondWithTransform(event: FetchEvent): Promise<Response> {
     return createNewResponseWithCache(event.request.url, raw);
   }
 
+  // revalidate in build
   const cloned = matched.clone();
-  setTimeout(async () => {
-    const modifiedText = await cloned.text();
-    const oldHash = modifiedText.match(/\/\*\sSWDEV-HASH:(\d+)\s\*/)?.[1];
-    const newCode = await fetch(event.request).then((res) => res.text());
-    if (oldHash !== hash(newCode).toString()) {
-      await cache.delete(event.request.url);
-      console.log("[swdev:detect-change]", event.request.url);
-      const client = await clients.get(event.clientId);
-      client.postMessage({
-        type: "swdev:revalidate",
-        url: event.request.url,
-      });
-    }
-  }, 0);
+  if (false) {
+    setTimeout(async () => {
+      const modifiedText = await cloned.text();
+      const oldHash = modifiedText.match(/\/\*\sSWDEV-HASH:(\d+)\s\*/)?.[1];
+      const newCode = await fetch(event.request).then((res) => res.text());
+      if (oldHash !== hash(newCode).toString()) {
+        await cache.delete(event.request.url);
+        console.log("[swdev:detect-change]", event.request.url);
+        const client = await clients.get(event.clientId);
+        client.postMessage({
+          type: "swdev:revalidate",
+          url: event.request.url,
+        });
+      }
+    }, 0);
+  }
   return matched;
 }
 
@@ -124,15 +125,3 @@ const tsPreprocess = () => {
     script,
   };
 };
-
-// async function useCacheOrLoad(request: any) {
-//   const res = await caches.match(request);
-//   if (res) {
-//     return res;
-//   }
-//   const cache = await caches.open("1");
-//   const response = await fetch(request);
-//   await cache.put(request, response.clone());
-//   console.info("trans-loader: Cache", request.url);
-//   return response;
-// }

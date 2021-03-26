@@ -8,5 +8,6 @@
 </script>
 
 <div>
+  Edit me
   {x}
 </div>

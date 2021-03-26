@@ -8,14 +8,16 @@
     {
       "imports": {
         "svelte": "https://cdn.skypack.dev/svelte",
-        "svelte/internal": "https://cdn.skypack.dev/svelte/internal"
+        "svelte/internal": "https://cdn.skypack.dev/svelte/internal",
+        "react": "https://cdn.skypack.dev/react",
+        "react-dom": "https://cdn.skypack.dev/react-dom"
       }
     }
     </script>
 
   <script type="module">
     import { start } from "./swdev-client.js";
-    start("./script/main.ts");
+    start("./script/main.tsx");
 
     // ws test
     // import { WebSocketClient, StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.0/mod.ts";
@@ -31,6 +33,8 @@
   </script>
 </head>
 <body>
-  <div class="root"></div>
+  <div class="svelte-root"></div>
+  <div class="react-root"></div>
+
 </body>
 </html>
