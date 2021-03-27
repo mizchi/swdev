@@ -4,8 +4,8 @@ import {
 } from "https://cdn.esm.sh/svelte/compiler";
 
 import ts from "https://cdn.esm.sh/typescript";
-import { rollup, Plugin } from "http://cdn.esm.sh/rollup";
-import { httpResolve } from "http://cdn.esm.sh/rollup-plugin-http-resolve";
+import { rollup, Plugin } from "https://cdn.esm.sh/rollup";
+import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
 import { exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 

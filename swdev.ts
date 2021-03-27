@@ -34,7 +34,7 @@ switch (task) {
       stderr: "piped",
     });
 
-    console.log(`[swdev] server stared http://localhost:${port}`);
+    console.log(`[swdev] server stared https://localhost:${port}`);
 
     const { code } = await process.status();
 

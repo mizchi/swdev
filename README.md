@@ -6,9 +6,15 @@ _DO NOT USE PRODUCTION_
 
 ## Install
 
-TBD
+```
+deno install -qAf --unstable https://deno.land/x/swdev@0.0.1-alpha.2/swdev.ts
+```
 
 ## Develop
+
+$ swdev init myapp
+$ cd myapp
+$ swdev serve
 
 ## Release
 

@@ -1,6 +1,6 @@
-import { rollup } from "http://cdn.esm.sh/rollup";
-import { virtualFs } from "http://cdn.esm.sh/rollup-plugin-virtual-fs";
-import { httpResolve } from "http://cdn.esm.sh/rollup-plugin-http-resolve";
+import { rollup } from "https://cdn.esm.sh/rollup";
+import { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";
+import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 import { loadTs, transform } from "./plugins.ts";
 
