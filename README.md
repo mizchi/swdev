@@ -7,6 +7,8 @@ Runtime transfome by Service Worker and Deno(PoC).
 - Transform and cache in service-worker (`typescript` and `svelte`)
 - Cache bursting by file change event
 - Safe file read / write by `deno` permissions
+- Use deno semantics in frontend
+- Bundle for production
 
 ## Install
 
