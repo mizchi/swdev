@@ -4,7 +4,7 @@ import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 import { loadTs, transform } from "./plugins.ts";
 
-async function prebuild(dir: string) {
+async function prebuild(dir: string, override: boolean = false) {
   const sourceGen = await rollup({
     input: "/swdev-worker.ts",
     onwarn(warn: any) {
@@ -64,4 +64,5 @@ async function prebuild(dir: string) {
   await Deno.writeTextFile(swdevClientOutpath, clientGen.output[0].code);
 }
 
-prebuild("prebuilt");
+// prebuild("prebuilt");
+prebuild("example", true);

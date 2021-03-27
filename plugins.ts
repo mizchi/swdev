@@ -8,7 +8,11 @@ import { Plugin } from "https://cdn.esm.sh/rollup";
 import { exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 
-let tsCode: string | null = null;
+// cache in tmp
+const TS_CODE_PATH = "/tmp/_tscode.js";
+let tsCode: string | null = await Deno.readTextFile(TS_CODE_PATH).catch(
+  (_e) => null
+);
 export const loadTs = () =>
   ({
     name: "ts-in-rollup",
@@ -28,6 +32,7 @@ export const loadTs = () =>
           .replace(/require\("inspector"\)/, "{}");
         tsCode =
           `globalThis.window = self;\n` + rewrote + `export default ts;\n`;
+        await Deno.writeTextFile(TS_CODE_PATH, tsCode);
         return tsCode;
       }
     },

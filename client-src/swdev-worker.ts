@@ -5,6 +5,7 @@ import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
 
 const CACHE_VERSION = "v1";
 declare var self: any;
+declare var caches: any;
 declare var clients: any;
 
 self.addEventListener("install", (ev: any) => ev.waitUntil(self.skipWaiting()));
@@ -16,7 +17,7 @@ self.addEventListener("activate", (ev: any) =>
 const TARGET_EXTENSIONS = [".ts", ".tsx", ".svelte"];
 
 self.addEventListener("fetch", (event: FetchEvent) => {
-  const url = event.request.url;
+  const [url, _hash] = event.request.url.split("?");
   if (url.endsWith("/__swdev/revalidate")) {
     console.info("[swdev:revalidate]");
     event.respondWith(revalidateResponse(event));
@@ -26,6 +27,22 @@ self.addEventListener("fetch", (event: FetchEvent) => {
     event.respondWith(respondWithTransform(event));
   }
 });
+
+async function resolveContentByRequest(request: Request) {
+  const res = await fetch(request);
+  if (!res.ok) {
+    throw new Error(`faild to fetch: ${url}`);
+  }
+  return res.text();
+}
+
+async function resolveContent(url: string) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`faild to fetch: ${url}`);
+  }
+  return res.text();
+}
 
 async function revalidateResponse(event: FetchEvent): Promise<Response> {
   const data = await event.request.json();
@@ -63,6 +80,7 @@ async function transform(url: string, code: string): Promise<string> {
     });
     const compiled = svelteCompile(preprocessed, {
       css: false,
+      hydratable: true,
     });
     return header + compiled.js.code;
   } else {
@@ -85,33 +103,33 @@ async function createNewResponseWithCache(url: string, newCode: string) {
 }
 
 async function respondWithTransform(event: FetchEvent): Promise<Response> {
-  const cache = await caches.open(CACHE_VERSION);
-  const matched = await cache.match(event.request);
-  if (matched == null) {
-    const response = await fetch(event.request);
-    const raw: string = await response.text();
-    return createNewResponseWithCache(event.request.url, raw);
-  }
+  const [url, _hash] = event.request.url.split("?");
 
-  // revalidate in build
-  const cloned = matched.clone();
-  // if (false) {
-  //   setTimeout(async () => {
-  //     const modifiedText = await cloned.text();
-  //     const oldHash = modifiedText.match(/\/\*\sSWDEV-HASH:(\d+)\s\*/)?.[1];
-  //     const newCode = await fetch(event.request).then((res) => res.text());
-  //     if (oldHash !== hash(newCode).toString()) {
-  //       await cache.delete(event.request.url);
-  //       console.log("[swdev:detect-change]", event.request.url);
-  //       const client = await clients.get(event.clientId);
-  //       client.postMessage({
-  //         type: "swdev:revalidate",
-  //         url: event.request.url,
-  //       });
-  //     }
-  //   }, 0);
-  // }
-  return matched;
+  const cache = await caches.open(CACHE_VERSION);
+
+  const newReq = new Request(url, {});
+
+  const matched = await cache.match(newReq);
+  if (matched) {
+    const text = await matched.text();
+    const newCode = text.replace(
+      /import\s+(.*)\s+from\s+['"](\..*)['"]/gi,
+      `import $1 from "$2?${Math.random()}"`
+    );
+
+    // console.log("[swdev:debug]", newCode);
+    return new Response(newCode, {
+      // @ts-ignore
+      mode: "no-cors",
+      status: 200,
+      headers: {
+        "Content-Type": "text/javascript",
+      },
+    });
+  }
+  console.log("[swdev:worker] create new cache", event.request.url);
+  const raw = await resolveContentByRequest(event.request);
+  return createNewResponseWithCache(url, raw);
 }
 
 const tsPreprocess = () => {

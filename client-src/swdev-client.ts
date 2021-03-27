@@ -7,7 +7,7 @@ async function setupServiceWorker() {
   let installed = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (installed) {
-      console.warn("[swdev] sw updated. reload it.");
+      console.warn("[swdev] service-worker updated. reload it.");
     }
   });
   const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
@@ -40,27 +40,21 @@ let dispose: any = null;
 
 async function run(url: string) {
   dispose?.();
-  const mod = await import(url);
+  const mod = await import(url + "?" + Math.random());
   dispose = mod.default();
 }
 
 export async function start(url: string, opts: { wsPort?: number } = {}) {
+  console.log("[swdev] start");
   await setupServiceWorker();
-  navigator.serviceWorker.addEventListener(
-    "message",
-    async (ev: MessageEvent) => {
-      if (ev.data?.type === "swdev:revalidate") {
-        await run(url);
-      }
-    }
-  );
-
   // websocket revalidater
   const socket = new WebSocket(`ws://localhost:${opts.wsPort ?? 17777}/`);
   socket.onmessage = async (message) => {
     const paths = JSON.parse(message.data);
     await requestRevalidate(paths);
-    location.reload();
+    console.log("[swdev:revalidate] paths", paths);
+    await run(url);
+    // location.reload();
   };
 
   await run(url);

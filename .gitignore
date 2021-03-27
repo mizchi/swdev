@@ -110,3 +110,4 @@ dist
 
 example/*__swdev-*
 *.bundle.js
+example/*
