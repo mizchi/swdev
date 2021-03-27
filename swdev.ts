@@ -1,25 +1,22 @@
 const [task, second] = Deno.args;
 
-switch (task) {
-  case "pre-release": {
-    const { prebuild } = await import("./commands.ts");
-    prebuild("prebuilt");
-    break;
-  }
+console.log("swdev", import.meta);
 
+switch (task) {
   case "init": {
     const { initAssets } = await import("./commands.ts");
     initAssets(second);
     break;
   }
 
-  case "bundle": {
-    // TODO
+  case "build": {
     const { bundle } = await import("./bundler.ts");
     bundle(second);
     break;
   }
+
   case "serve": {
+    const port = 7777;
     const process = Deno.run({
       cmd: [
         "deno",
@@ -28,10 +25,14 @@ switch (task) {
         `--allow-read=${Deno.cwd()}`,
         "server.ts",
         second,
+        "-p",
+        port.toString(),
       ],
       stdout: "piped",
       stderr: "piped",
     });
+
+    console.log(`[swdev] server stared http://localhost:${port}`);
 
     const { code } = await process.status();
 

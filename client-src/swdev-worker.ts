@@ -95,22 +95,22 @@ async function respondWithTransform(event: FetchEvent): Promise<Response> {
 
   // revalidate in build
   const cloned = matched.clone();
-  if (false) {
-    setTimeout(async () => {
-      const modifiedText = await cloned.text();
-      const oldHash = modifiedText.match(/\/\*\sSWDEV-HASH:(\d+)\s\*/)?.[1];
-      const newCode = await fetch(event.request).then((res) => res.text());
-      if (oldHash !== hash(newCode).toString()) {
-        await cache.delete(event.request.url);
-        console.log("[swdev:detect-change]", event.request.url);
-        const client = await clients.get(event.clientId);
-        client.postMessage({
-          type: "swdev:revalidate",
-          url: event.request.url,
-        });
-      }
-    }, 0);
-  }
+  // if (false) {
+  //   setTimeout(async () => {
+  //     const modifiedText = await cloned.text();
+  //     const oldHash = modifiedText.match(/\/\*\sSWDEV-HASH:(\d+)\s\*/)?.[1];
+  //     const newCode = await fetch(event.request).then((res) => res.text());
+  //     if (oldHash !== hash(newCode).toString()) {
+  //       await cache.delete(event.request.url);
+  //       console.log("[swdev:detect-change]", event.request.url);
+  //       const client = await clients.get(event.clientId);
+  //       client.postMessage({
+  //         type: "swdev:revalidate",
+  //         url: event.request.url,
+  //       });
+  //     }
+  //   }, 0);
+  // }
   return matched;
 }
 
