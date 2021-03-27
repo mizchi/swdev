@@ -1,6 +1,6 @@
 # SWDEV
 
-Runtime transfome by Service Worker PoC.
+Runtime transfome by Service Worker and Deno PoC.
 
 _DO NOT USE PRODUCTION_
 
