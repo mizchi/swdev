@@ -35,7 +35,10 @@ _CAUTION_: port:7777 register service-worker. Unregister service-worker after de
 ## Release
 
 ```
-$ swdev build main.tsx
+## Build entry point
+$ swdev build main.tsx #=> main.bundle.js
+
+## Deploy assets
 # netlify deploy --prod -d .
 ```
 
