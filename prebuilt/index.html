@@ -19,7 +19,7 @@
       const { start } = await import("./__swdev-client.js");
       start("./main.tsx", {wsPort: 17777});
     } else {
-      import("./main.bundle.js")
+      import("./main.bundle.js").then(mod => mod.default());
     }
   </script>
 </head>
