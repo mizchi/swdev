@@ -17,9 +17,9 @@
   <script type="module">
     if (location.hostname === "localhost") {
       const { start } = await import("./__swdev-client.js");
-      start("./script/main.tsx");
+      start("./main.tsx");
     } else {
-      import("./script/main.bundle.js")
+      import("./main.bundle.js")
     }
   </script>
 </head>

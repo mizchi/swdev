@@ -5,14 +5,15 @@ async function setupServiceWorker() {
     let installed = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (installed) {
-            const modal = document.createElement("div");
-            modal.innerHTML = `
-        <div style='position: absolute; outline: 1px solid black; right: 10px; bottom: 10px; width: 350px; height: 80px'>
-          <div>New version available!</div>
-          <span>It will be applied from the next</span> - <button onclick="location.reload()">Reload</button>
-        </div>
-      `;
-            document.body.appendChild(modal);
+            location.reload();
+            // const modal = document.createElement("div");
+            // modal.innerHTML = `
+            //   <div style='position: absolute; outline: 1px solid black; right: 10px; bottom: 10px; width: 350px; height: 80px'>
+            //     <div>New version available!</div>
+            //     <span>It will be applied from the next</span> - <button onclick="location.reload()">Reload</button>
+            //   </div>
+            // `;
+            // document.body.appendChild(modal);
         }
     });
     const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
@@ -57,11 +58,7 @@ async function start(url) {
     socket.onmessage = async (message) => {
         const paths = JSON.parse(message.data);
         await requestRevalidate(paths);
-        // console.log("requested", paths);
-        // TODO: I want to re-fetch module but I can not burst esm
-        // console.log("reload!");
         location.reload();
-        // await run(url);
     };
     await run(url);
 }

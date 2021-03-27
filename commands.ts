@@ -11,19 +11,22 @@ export async function initAssets(dir: string) {
   const mainTsxOutpath = path.join(dir, "main.tsx");
   const svelteAppOutpath = path.join(dir, "App.svelte");
 
-  await copyIfNotExist(swdevClientOutpath, "./prebuilt/__swdev-client.js");
-  await copyIfNotExist(swdevWorkerOutpath, "./prebuilt/__swdev-worker.js");
-  await copyIfNotExist(indexHtmlOutpath, "./prebuilt/index.html");
-  await copyIfNotExist(mainTsxOutpath, "./prebuilt/main.tsx");
-  await copyIfNotExist(svelteAppOutpath, "./prebuilt/App.svelte");
+  await copyIfNotExist(swdevClientOutpath, "prebuilt/__swdev-client.js");
+  await copyIfNotExist(swdevWorkerOutpath, "prebuilt/__swdev-worker.js");
+  await copyIfNotExist(indexHtmlOutpath, "prebuilt/index.html");
+  await copyIfNotExist(mainTsxOutpath, "prebuilt/main.tsx");
+  await copyIfNotExist(svelteAppOutpath, "prebuilt/App.svelte");
 }
+
+const dev = false;
+const prodHost = dev ? undefined : "https://deno.land/x/swdev";
 
 async function copyIfNotExist(outpath: string, original: string) {
   if (await exists(outpath)) {
     // skip
     console.log("[swdev:skip-generate]", outpath);
   } else {
-    const content = await getAsset(original);
+    const content = await getAsset(original, prodHost);
     await Deno.writeTextFile(outpath, content);
     console.log("[swdev:generate]", outpath);
   }

@@ -1,17 +1,18 @@
-const [task, second] = Deno.args;
+import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
 
-console.log("swdev", import.meta);
+const args = parse(Deno.args);
+const [task, second] = args._ as string[];
 
 switch (task) {
   case "init": {
     const { initAssets } = await import("./commands.ts");
-    initAssets(second);
+    initAssets(second ?? ".");
     break;
   }
 
   case "build": {
     const { bundle } = await import("./bundler.ts");
-    bundle(second);
+    bundle(second ?? ".");
     break;
   }
 
@@ -23,8 +24,9 @@ switch (task) {
         "run",
         "--allow-net",
         `--allow-read=${Deno.cwd()}`,
-        "server.ts",
-        second,
+        "https://deno.land/x/swdev/server.ts",
+        // "server.ts",
+        second ?? ".",
         "-p",
         port.toString(),
       ],

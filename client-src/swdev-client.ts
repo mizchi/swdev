@@ -8,14 +8,15 @@ async function setupServiceWorker() {
   let installed = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (installed) {
-      const modal = document.createElement("div");
-      modal.innerHTML = `
-        <div style='position: absolute; outline: 1px solid black; right: 10px; bottom: 10px; width: 350px; height: 80px'>
-          <div>New version available!</div>
-          <span>It will be applied from the next</span> - <button onclick="location.reload()">Reload</button>
-        </div>
-      `;
-      document.body.appendChild(modal);
+      location.reload();
+      // const modal = document.createElement("div");
+      // modal.innerHTML = `
+      //   <div style='position: absolute; outline: 1px solid black; right: 10px; bottom: 10px; width: 350px; height: 80px'>
+      //     <div>New version available!</div>
+      //     <span>It will be applied from the next</span> - <button onclick="location.reload()">Reload</button>
+      //   </div>
+      // `;
+      // document.body.appendChild(modal);
     }
   });
   const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
