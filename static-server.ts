@@ -459,8 +459,4 @@ function main(): void {
   console.log(`${proto.toUpperCase()} server listening on ${proto}://${addr}/`);
 }
 
-export { main };
-
-// if (import.meta.main) {
-//   main();
-// }
+export const startStaticServer = main;

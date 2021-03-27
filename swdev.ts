@@ -17,10 +17,11 @@ switch (task) {
   }
 
   case "serve": {
+    // TODO: does not work
     const port = 7777;
     const runner = args.local
-      ? "server.ts"
-      : "https://deno.land/x/swdev/server.ts";
+      ? "runServer.ts"
+      : "https://deno.land/x/swdev/runServer.ts";
     const process = Deno.run({
       cmd: [
         "deno",
@@ -35,7 +36,7 @@ switch (task) {
       stdout: "piped",
       stderr: "piped",
     });
-    const endpoint = "ws://0.0.0.0:17777";
+    const endpoint = "ws://localhost:17777";
     console.log(`[swdev:asset-server] http://localhost:${port}`);
     console.log(`[swdev:ws] ${endpoint}`);
 
