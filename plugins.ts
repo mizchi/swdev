@@ -5,7 +5,6 @@ import {
 
 import ts from "https://cdn.esm.sh/typescript";
 import { Plugin } from "https://cdn.esm.sh/rollup";
-import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
 import { exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 
@@ -88,10 +87,10 @@ export const denoLoader = () =>
     name: "deno-loader",
     async resolveId(id: string, importer: string | undefined) {
       const realpath = importer ? path.join(path.dirname(importer), id) : id;
-      console.log("deno-loader:resolve", realpath);
+      // console.log("[deno-loader:resolve]", realpath);
       // console.log("deno-loader:resolveId", id, importer);
       if (await exists(realpath)) {
-        console.log("deno-loader:resolveId", realpath);
+        // console.log("deno-loader:resolveId]", realpath);
         return realpath;
       }
       return;
@@ -99,14 +98,13 @@ export const denoLoader = () =>
     async load(id: string) {
       if (await exists(id)) {
         const content = await Deno.readTextFile(id);
-        console.log("deno-loader:load", id, content.slice(0, 10), "...");
+        // console.log("deno-loader:load", id, content.slice(0, 10), "...");
         return content;
       }
     },
     transform(code: string, id: string) {
       if (id.endsWith(".ts") || id.endsWith(".tsx")) {
-        console.log("deno-loader:transform", id);
-
+        // console.log("deno-loader:transform", id);
         const out = ts.transpile(code, {
           filename: "$.tsx",
           target: ts.ScriptTarget.ES2019,
