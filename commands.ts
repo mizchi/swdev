@@ -4,17 +4,7 @@ import { httpResolve } from "http://cdn.esm.sh/rollup-plugin-http-resolve";
 import { ensureDir, exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 import { loadTs, transform } from "./plugins.ts";
-
-async function getAsset(filepath: string) {
-  if (import.meta.url.startsWith("file://")) {
-    return await Deno.readTextFile(filepath);
-  } else {
-    const dir = path.dirname(import.meta.url);
-    const dest = path.join(dir, filepath);
-    const result = await fetch(dest).then((res) => res.text());
-    return result;
-  }
-}
+import { getAsset } from "./utils.ts";
 
 export async function prebuild(dir: string) {
   const sourceGen = await rollup({
