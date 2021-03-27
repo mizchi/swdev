@@ -219,29 +219,29 @@ export async function prebuild(dir: string) {
   await Deno.writeTextFile(swdevClientOutpath, clientGen.output[0].code);
 }
 
-export async function buildSwdevAssets(dir: string) {
+export async function initAssets(dir: string) {
   await ensureDir(dir);
 
-  // copy assets
-  const swdevWorkerCode = await getAsset("./dist/__swdev-worker.js");
-  const swdevClientCode = await getAsset("./dist/__swdev-client.js");
-  const swdevOutpath = path.join(dir, "__swdev-worker.js");
+  const swdevWorkerOutpath = path.join(dir, "__swdev-worker.js");
   const swdevClientOutpath = path.join(dir, "__swdev-client.js");
-  await Deno.writeTextFile(swdevOutpath, swdevWorkerCode);
-  await Deno.writeTextFile(swdevClientOutpath, swdevClientCode);
-
-  console.log("[swdev:generate]", swdevOutpath);
-  console.log("[swdev:generate]", swdevClientOutpath);
-
   const indexHtmlOutpath = path.join(dir, "index.html");
-  if (await exists(indexHtmlOutpath)) {
+  const mainTsxOutpath = path.join(dir, "main.tsx");
+  const svelteAppOutpath = path.join(dir, "App.svelte");
+
+  await copyIfNotExist(swdevClientOutpath, "./prebuilt/__swdev-client.js");
+  await copyIfNotExist(swdevWorkerOutpath, "./prebuilt/__swdev-worker.js");
+  await copyIfNotExist(indexHtmlOutpath, "./prebuilt/index.html");
+  await copyIfNotExist(mainTsxOutpath, "./prebuilt/main.tsx");
+  await copyIfNotExist(svelteAppOutpath, "./prebuilt/App.svelte");
+}
+
+async function copyIfNotExist(outpath: string, original: string) {
+  if (await exists(outpath)) {
     // skip
-    console.log("[swdev:skip-generate]", indexHtmlOutpath);
+    console.log("[swdev:skip-generate]", outpath);
   } else {
-    const html = await Deno.readTextFile(
-      path.join(Deno.cwd(), "template.html")
-    );
-    await Deno.writeTextFile(indexHtmlOutpath, html);
-    console.log("[swdev:generate]", indexHtmlOutpath);
+    const content = await getAsset(original);
+    await Deno.writeTextFile(outpath, content);
+    console.log("[swdev:generate]", outpath);
   }
 }

@@ -8,8 +8,8 @@ switch (task) {
   }
 
   case "init": {
-    const { buildSwdevAssets } = await import("./setup.ts");
-    buildSwdevAssets(second);
+    const { initAssets } = await import("./setup.ts");
+    initAssets(second);
     break;
   }
 
