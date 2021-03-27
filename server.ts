@@ -1,4 +1,3 @@
-declare var Deno: any;
 import {
   WebSocketClient,
   WebSocketServer,
@@ -6,7 +5,6 @@ import {
 
 const cwd = Deno.cwd();
 const target = Deno.args[0];
-
 const watchTarget = cwd + "/" + target;
 
 const wss = new WebSocketServer(9000);
@@ -16,7 +14,7 @@ wss.on("connection", async (socket: WebSocketClient) => {
   let closed = false;
   socket.on("close", () => {
     closed = true;
-    console.log("close", socket);
+    console.log("close");
   });
   for await (const event of watcher) {
     if (closed) break;
@@ -38,7 +36,5 @@ function debounceEmit(socket: WebSocketClient, paths: string[]) {
   }, 300);
 }
 
-// import "https://deno.land/std@0.90.0/http/file_server.ts";
 import { main } from "./static-server.ts";
-
 main();

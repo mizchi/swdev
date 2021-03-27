@@ -1,9 +1,8 @@
 import App from "./App.svelte";
-import React from "react";
-import ReactDOM from "react-dom";
+import React from "https://cdn.esm.sh/react";
+import ReactDOM from "https://cdn.esm.sh/react-dom";
 
 export default () => {
-  console.log("start!!!");
   const app = new App({ target: document.querySelector(".svelte-root") });
   ReactDOM.render(
     <div>React component</div>,

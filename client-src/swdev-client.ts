@@ -18,7 +18,7 @@ async function setupServiceWorker() {
       document.body.appendChild(modal);
     }
   });
-  const reg = await navigator.serviceWorker.register("/swdev.js");
+  const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
   await navigator.serviceWorker.ready;
   installed = true;
   setInterval(() => {
@@ -70,9 +70,10 @@ export async function start(url: string) {
   socket.onmessage = async (message) => {
     const paths = JSON.parse(message.data);
     await requestRevalidate(paths);
+    // console.log("requested", paths);
 
     // TODO: I want to re-fetch module but I can not burst esm
-    console.log("reload!");
+    // console.log("reload!");
     location.reload();
     // await run(url);
   };

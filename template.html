@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SWDEV</title>
+  <title>SWDEV Playground</title>
   <script type="importmap">
     {
       "imports": {
@@ -16,9 +16,10 @@
     </script>
   <script type="module">
     if (location.hostname === "localhost") {
-      import("./__swdev-client.js").then(({start}) => start('./main.tsx'));
+      const { start } = await import("./__swdev-client.js");
+      start("./script/main.tsx");
     } else {
-      import('./main.bundle.js').then(mod => mod.default());
+      import("./script/main.bundle.js")
     }
   </script>
 </head>

@@ -7,17 +7,20 @@ _DO NOT USE PRODUCTION_
 ## Requirements
 
 - deno `v1.*`
-- node v14
 
-## Setup
+## Develop
 
 ```
-$ yarn
-$ yarn setup
-$ yarn start
+$ deno run --allow-net --allow-read server.ts www
 ```
 
 Open `http://localhost:9999`
+
+## Release
+
+```
+$ deno run swdev.ts bundle www/script/main.ts
+```
 
 ## Add library
 

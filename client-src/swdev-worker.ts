@@ -39,6 +39,7 @@ async function revalidateResponse(event: FetchEvent): Promise<Response> {
       }
     })
   );
+  console.log("[swdev-worker:revalidate]", data.urls);
   return new Response(event.request.url, {
     // @ts-ignore
     mode: "no-cors",
