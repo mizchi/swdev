@@ -13,7 +13,7 @@ Runtime transfome by Service Worker and Deno(PoC).
 ## Install
 
 ```
-$ deno install -qAf --unstable https://deno.land/x/swdev@0.1.1/swdev.ts
+$ deno install -qAf --unstable https://deno.land/x/swdev@0.1.2/swdev.ts
 
 $ swdev init swdev-app
 $ cd swdev-app

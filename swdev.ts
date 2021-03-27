@@ -17,11 +17,10 @@ switch (task) {
   }
 
   case "serve": {
-    // TODO: does not work
     const port = 7777;
     const runner = args.local
-      ? "runServer.ts"
-      : "https://deno.land/x/swdev/runServer.ts";
+      ? "run_server.ts"
+      : "https://deno.land/x/swdev/run_server.ts";
     const process = Deno.run({
       cmd: [
         "deno",

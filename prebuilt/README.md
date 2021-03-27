@@ -3,7 +3,7 @@
 ## develop
 
 ```
-$ deno install -qAf --unstable https://deno.land/x/swdev@0.0.1-alpha.7/swdev.ts
+$ deno install -qAf --unstable https://deno.land/x/swdev@0.1.2/swdev.ts
 $ swdev serve
 ```
 
@@ -11,7 +11,7 @@ $ swdev serve
 
 ```bash
 $ swdev build main.tsx
-# netlify deploy --prod -d dist
+# netlify deploy --prod -d .
 ```
 
 ## LICENSE
