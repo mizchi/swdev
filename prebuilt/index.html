@@ -17,7 +17,7 @@
   <script type="module">
     if (location.hostname === "localhost") {
       const { start } = await import("./__swdev-client.js");
-      start("./main.tsx");
+      start("./main.tsx", {wsPort: 17777});
     } else {
       import("./main.bundle.js")
     }

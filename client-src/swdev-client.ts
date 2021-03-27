@@ -1,5 +1,4 @@
 declare var navigator: any;
-declare var document: any;
 
 async function setupServiceWorker() {
   if (navigator.serviceWorker == null) {
@@ -8,15 +7,7 @@ async function setupServiceWorker() {
   let installed = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (installed) {
-      location.reload();
-      // const modal = document.createElement("div");
-      // modal.innerHTML = `
-      //   <div style='position: absolute; outline: 1px solid black; right: 10px; bottom: 10px; width: 350px; height: 80px'>
-      //     <div>New version available!</div>
-      //     <span>It will be applied from the next</span> - <button onclick="location.reload()">Reload</button>
-      //   </div>
-      // `;
-      // document.body.appendChild(modal);
+      console.warn("[swdev] sw updated. reload it.");
     }
   });
   const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
@@ -39,6 +30,8 @@ export async function requestRevalidate(urls: string[]) {
   });
   if (!res.ok) {
     console.log("[swdev:failed-revalidate]", newUrls);
+  } else {
+    console.log("[swdev:revalidate-requested]", newUrls);
   }
   return;
 }
@@ -47,16 +40,12 @@ let dispose: any = null;
 
 async function run(url: string) {
   dispose?.();
-  // const text = await fetch(url).then((res) => res.text());
-  // const encoded = btoa(unescape(encodeURIComponent(text)));
-  // const mod = await import(`data:text/javascript;base64,${encoded}`);
   const mod = await import(url);
   dispose = mod.default();
 }
 
-export async function start(url: string) {
+export async function start(url: string, opts: { wsPort?: number } = {}) {
   await setupServiceWorker();
-  // service worker revalidater
   navigator.serviceWorker.addEventListener(
     "message",
     async (ev: MessageEvent) => {
@@ -67,7 +56,7 @@ export async function start(url: string) {
   );
 
   // websocket revalidater
-  const socket = new WebSocket("ws://localhost:9000/");
+  const socket = new WebSocket(`ws://localhost:${opts.wsPort ?? 17777}/`);
   socket.onmessage = async (message) => {
     const paths = JSON.parse(message.data);
     await requestRevalidate(paths);

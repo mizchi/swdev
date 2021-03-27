@@ -7,7 +7,7 @@ const cwd = Deno.cwd();
 const target = Deno.args[0];
 const watchTarget = cwd + "/" + target;
 
-const wss = new WebSocketServer(9000);
+const wss = new WebSocketServer(17777);
 wss.on("connection", async (socket: WebSocketClient) => {
   console.log("new connection");
   const watcher = Deno.watchFs(watchTarget);
