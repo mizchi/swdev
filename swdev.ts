@@ -2,24 +2,23 @@ const [task, second] = Deno.args;
 
 switch (task) {
   case "pre-release": {
-    const { prebuild } = await import("./setup.ts");
+    const { prebuild } = await import("./commands.ts");
     prebuild("prebuilt");
     break;
   }
 
   case "init": {
-    const { initAssets } = await import("./setup.ts");
+    const { initAssets } = await import("./commands.ts");
     initAssets(second);
     break;
   }
 
   case "bundle": {
     // TODO
-    const { bundle } = await import("./setup.ts");
+    const { bundle } = await import("./bundler.ts");
     bundle(second);
     break;
   }
-
   case "serve": {
     const process = Deno.run({
       cmd: [
