@@ -5,12 +5,16 @@ import { getAsset } from "./utils.ts";
 export async function initAssets(dir: string) {
   await ensureDir(dir);
 
+  const readmeOutpath = path.join(dir, "README.md");
+  const gitIgnorePath = path.join(dir, ".gitignore");
   const swdevWorkerOutpath = path.join(dir, "__swdev-worker.js");
   const swdevClientOutpath = path.join(dir, "__swdev-client.js");
   const indexHtmlOutpath = path.join(dir, "index.html");
   const mainTsxOutpath = path.join(dir, "main.tsx");
   const svelteAppOutpath = path.join(dir, "App.svelte");
 
+  await copyIfNotExist(readmeOutpath, "prebuilt/README.md");
+  await copyIfNotExist(gitIgnorePath, "prebuilt/.gitignore.raw");
   await copyIfNotExist(swdevClientOutpath, "prebuilt/__swdev-client.js");
   await copyIfNotExist(swdevWorkerOutpath, "prebuilt/__swdev-worker.js");
   await copyIfNotExist(indexHtmlOutpath, "prebuilt/index.html");

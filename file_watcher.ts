@@ -41,8 +41,3 @@ export function startFileWatcher(
   }
   console.log("[swdev] ws-server strated");
 }
-
-if (import.meta.main) {
-  const wss = new WebSocketServer(17777);
-  startFileWatcher(wss, { cwd: Deno.cwd(), target: "." });
-}
