@@ -7,7 +7,7 @@ _DO NOT USE PRODUCTION_
 ## Install
 
 ```
-deno install -qAf --unstable https://deno.land/x/swdev@0.0.1-alpha.2/swdev.ts
+deno install -qAf --unstable https://deno.land/x/swdev@0.0.1-alpha.5/swdev.ts
 ```
 
 ## Develop
