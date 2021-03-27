@@ -1,3 +1,6 @@
+declare var navigator: any;
+declare var document: any;
+
 async function setupServiceWorker() {
   if (navigator.serviceWorker == null) {
     throw new Error("Your browser can not use serviceWorker");
@@ -53,11 +56,14 @@ async function run(url: string) {
 export async function start(url: string) {
   await setupServiceWorker();
   // service worker revalidater
-  navigator.serviceWorker.addEventListener("message", async (ev) => {
-    if (ev.data?.type === "swdev:revalidate") {
-      await run(url);
+  navigator.serviceWorker.addEventListener(
+    "message",
+    async (ev: MessageEvent) => {
+      if (ev.data?.type === "swdev:revalidate") {
+        await run(url);
+      }
     }
-  });
+  );
 
   // websocket revalidater
   const socket = new WebSocket("ws://localhost:9000/");

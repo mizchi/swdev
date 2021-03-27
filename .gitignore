@@ -109,5 +109,5 @@ dist
 .vscode-test
 
 
-public/swdev.js
-public/swdev-client.js
+www/swdev.js
+www/swdev-client.js

@@ -37,3 +37,8 @@ function debounceEmit(socket: WebSocketClient, paths: string[]) {
     bufferedPaths = new Set();
   }, 300);
 }
+
+// import "https://deno.land/std@0.90.0/http/file_server.ts";
+import { main } from "./static-server.ts";
+
+main();

@@ -21,11 +21,10 @@ Open `http://localhost:9999`
 
 ## Add library
 
-Edit `public/index.html` 's import map
+Edit `www/index.html` 's import map
 
 ## TODO
 
-- [ ] Remove node.js
 - [ ] CLI to setup
 - [ ] ESM Cache bursting
 

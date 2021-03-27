@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>No transform svelte</title>
+  <title>SWDEV Playground</title>
   <script type="importmap">
     {
       "imports": {
@@ -14,27 +14,13 @@
       }
     }
     </script>
-
   <script type="module">
     import { start } from "./swdev-client.js";
     start("./script/main.tsx");
-
-    // ws test
-    // import { WebSocketClient, StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.0/mod.ts";
-    // const endpoint = "ws://127.0.0.1:8080";
-    // const ws = new StandardWebSocketClient(endpoint);
-    // ws.on("open", function() {
-    //   console.log("ws connected!");
-    // });
-    // ws.on("message", function (message: string) {
-    //   console.log(message);
-    // });
-    // ws.send("something");
   </script>
 </head>
 <body>
   <div class="svelte-root"></div>
   <div class="react-root"></div>
-
 </body>
 </html>

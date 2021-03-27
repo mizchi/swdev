@@ -1,5 +1,5 @@
-import hash from "string-hash";
 import ts from "typescript";
+import hash from "string-hash";
 import { compile as svelteCompile, preprocess } from "svelte/compiler";
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
 
