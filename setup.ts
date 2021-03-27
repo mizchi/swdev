@@ -10,6 +10,17 @@ import { httpResolve } from "http://cdn.esm.sh/rollup-plugin-http-resolve";
 import { ensureDir, exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 
+async function getAsset(filepath: string) {
+  if (import.meta.url.startsWith("file://")) {
+    return await Deno.readTextFile(filepath);
+  } else {
+    const dir = path.dirname(import.meta.url);
+    const dest = path.join(dir, filepath);
+    const result = await fetch(dest).then((res) => res.text());
+    return result;
+  }
+}
+
 let tsCode: string | null = null;
 const loadTs = () =>
   ({
@@ -206,13 +217,21 @@ export async function prebuild(dir: string) {
 
   await Deno.writeTextFile(swdevOutpath, sourceGen.output[0].code);
   await Deno.writeTextFile(swdevClientOutpath, clientGen.output[0].code);
-  console.log("[swdev:generate]", swdevOutpath);
-  console.log("[swdev:generate]", swdevClientOutpath);
 }
 
 export async function buildSwdevAssets(dir: string) {
-  await ensureDir(dir); // returns a promise
-  await prebuild(dir);
+  await ensureDir(dir);
+
+  // copy assets
+  const swdevWorkerCode = await getAsset("./dist/__swdev-worker.js");
+  const swdevClientCode = await getAsset("./dist/__swdev-client.js");
+  const swdevOutpath = path.join(dir, "__swdev-worker.js");
+  const swdevClientOutpath = path.join(dir, "__swdev-client.js");
+  await Deno.writeTextFile(swdevOutpath, swdevWorkerCode);
+  await Deno.writeTextFile(swdevClientOutpath, swdevClientCode);
+
+  console.log("[swdev:generate]", swdevOutpath);
+  console.log("[swdev:generate]", swdevClientOutpath);
 
   const indexHtmlOutpath = path.join(dir, "index.html");
   if (await exists(indexHtmlOutpath)) {

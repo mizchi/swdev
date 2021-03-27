@@ -1,16 +1,15 @@
 const [task, second] = Deno.args;
 
 switch (task) {
-  case "init": {
-    const { buildSwdevAssets } = await import("./setup.ts");
-    buildSwdevAssets(second);
+  case "pre-release": {
+    const { prebuild } = await import("./setup.ts");
+    prebuild("prebuilt");
     break;
   }
 
-  case "prebuild": {
-    // TODO
-    const { prebuild } = await import("./setup.ts");
-    prebuild(second);
+  case "init": {
+    const { buildSwdevAssets } = await import("./setup.ts");
+    buildSwdevAssets(second);
     break;
   }
 
