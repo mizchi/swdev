@@ -7,7 +7,7 @@ _DO NOT USE PRODUCTION_
 ## Install
 
 ```
-$ deno install -qAf --unstable https://deno.land/x/swdev@0.0.1-alpha.7/swdev.ts
+$ deno install -qAf --unstable https://deno.land/x/swdev@0.1.0/swdev.ts
 
 $ swdev init swdev-app
 $ cd swdev-app
