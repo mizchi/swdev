@@ -6,7 +6,6 @@ import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 import type { RevalidateCommand } from "./types.ts";
 
 import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
-import { join } from "https://deno.land/std@0.91.0/path/mod.ts";
 
 const log = (...args: any) => console.log("[swdev:file_watcher]", ...args);
 

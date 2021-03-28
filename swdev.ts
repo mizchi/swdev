@@ -26,7 +26,7 @@ switch (task) {
 
   case "build": {
     const { bundle } = await import("./bundler.ts");
-    bundle(second ?? ".");
+    bundle(second ?? "main.tsx");
     break;
   }
 
