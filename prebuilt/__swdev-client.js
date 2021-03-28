@@ -1,3 +1,4 @@
+const log = (...args) => console.info("[swdev-client]", ...args);
 async function setupServiceWorker() {
     if (navigator.serviceWorker == null) {
         throw new Error("Your browser can not use serviceWorker");
@@ -5,52 +6,55 @@ async function setupServiceWorker() {
     let installed = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (installed) {
-            console.warn("[swdev] sw updated. reload it.");
+            console.warn("[swdev] service-worker updated. reload it.");
         }
     });
     const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
     await navigator.serviceWorker.ready;
     installed = true;
-    setInterval(() => {
-        reg.update();
-    }, 60 * 1000);
+    setInterval(() => reg.update(), 60 * 1000);
 }
-async function requestRevalidate(urls) {
-    const newUrls = urls.map((u) => u.startsWith("/") ? `${location.protocol}//${location.host}${u}` : u);
+async function requestRevalidate(cmd) {
+    const newPaths = cmd.paths.map((u) => u.startsWith("/") ? `${location.protocol}//${location.host}${u}` : u);
     const res = await fetch("/__swdev/revalidate", {
         method: "POST",
-        body: JSON.stringify({ urls: newUrls }),
+        body: JSON.stringify({ paths: newPaths }),
         headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
-        console.log("[swdev:failed-revalidate]", newUrls);
+        log("revalidate", newPaths);
     }
     else {
-        console.log("[swdev:revalidate-requested]", newUrls);
+        log("revalidate-requested", newPaths);
     }
     return;
 }
 let dispose = null;
 async function run(url) {
-    dispose === null || dispose === void 0 ? void 0 : dispose();
-    const mod = await import(url);
+    const runId = Math.random().toString();
+    log("run", runId);
+    await (dispose === null || dispose === void 0 ? void 0 : dispose());
+    const mod = await import(url + "?" + runId);
     dispose = mod.default();
 }
+let started = false;
 async function start(url, opts = {}) {
-    var _a;
+    var _a, _b;
+    if (started)
+        return;
+    started = true;
+    log("start");
     await setupServiceWorker();
-    navigator.serviceWorker.addEventListener("message", async (ev) => {
-        var _a;
-        if (((_a = ev.data) === null || _a === void 0 ? void 0 : _a.type) === "swdev:revalidate") {
-            await run(url);
-        }
-    });
+    const onFileChange = (_a = opts.onFileChange) !== null && _a !== void 0 ? _a : (() => run(url));
     // websocket revalidater
-    const socket = new WebSocket(`ws://localhost:${(_a = opts.wsPort) !== null && _a !== void 0 ? _a : 17777}/`);
+    const socket = new WebSocket(`ws://localhost:${(_b = opts.wsPort) !== null && _b !== void 0 ? _b : 17777}/`);
     socket.onmessage = async (message) => {
-        const paths = JSON.parse(message.data);
-        await requestRevalidate(paths);
-        location.reload();
+        const cmd = JSON.parse(message.data);
+        if (cmd.type === "revalidate") {
+            await requestRevalidate(cmd);
+            log("revalidated", cmd);
+            onFileChange();
+        }
     };
     await run(url);
 }

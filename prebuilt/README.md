@@ -3,7 +3,7 @@
 ## develop
 
 ```
-$ deno install -qAf --unstable https://deno.land/x/swdev@0.1.2/swdev.ts
+$ deno install -qAf --unstable https://deno.land/x/swdev/swdev.ts
 $ swdev serve
 ```
 

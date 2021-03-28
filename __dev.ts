@@ -1,3 +1,7 @@
+import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
+const args = parse(Deno.args);
+const [task, second] = args._ as string[];
+
 import { rollup } from "https://cdn.esm.sh/rollup";
 import { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";
 import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
@@ -64,5 +68,13 @@ async function prebuild(dir: string, override: boolean = false) {
   await Deno.writeTextFile(swdevClientOutpath, clientGen.output[0].code);
 }
 
-// prebuild("prebuilt");
-prebuild("example", true);
+switch (task) {
+  case "dev:build": {
+    prebuild("example", true);
+    break;
+  }
+  case "pre-release": {
+    prebuild("prebuilt", true);
+    break;
+  }
+}
