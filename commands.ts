@@ -11,8 +11,8 @@ export async function initAssets(dir: string) {
   const swdevClientOutpath = path.join(dir, "__swdev-client.js");
   const indexHtmlOutpath = path.join(dir, "index.html");
   const mainTsxOutpath = path.join(dir, "main.tsx");
+  
   const svelteAppOutpath = path.join(dir, "App.svelte");
-
   await copyIfNotExist(readmeOutpath, "prebuilt/README.md");
   await copyIfNotExist(gitIgnorePath, "prebuilt/.gitignore.raw");
   await copyIfNotExist(swdevClientOutpath, "prebuilt/__swdev-client.js");

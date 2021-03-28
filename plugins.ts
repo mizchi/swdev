@@ -13,6 +13,7 @@ const TS_CODE_PATH = "/tmp/_tscode.js";
 let tsCode: string | null = await Deno.readTextFile(TS_CODE_PATH).catch(
   (_e) => null
 );
+
 export const loadTs = () =>
   ({
     name: "ts-in-rollup",
@@ -58,6 +59,8 @@ export const svelte = () =>
       return;
     },
   } as Plugin);
+
+const log = (...args: any) => console.log("[deno-loader]", ...args);
 
 export const tsPreprocess = () => {
   const script: any = async ({ content, filename }: any) => {

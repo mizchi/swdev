@@ -1,3 +1,4 @@
+import type { RevalidateCommand } from "./../types.ts";
 import ts from "typescript";
 import hash from "string-hash";
 import { compile as svelteCompile, preprocess } from "svelte/compiler";
@@ -7,6 +8,8 @@ const CACHE_VERSION = "v1";
 declare var self: any;
 declare var caches: any;
 declare var clients: any;
+
+const log = (...args: any) => console.info("[swdev-worker]", ...args);
 
 self.addEventListener("install", (ev: any) => ev.waitUntil(self.skipWaiting()));
 
@@ -19,11 +22,11 @@ const TARGET_EXTENSIONS = [".ts", ".tsx", ".svelte"];
 self.addEventListener("fetch", (event: FetchEvent) => {
   const [url, _hash] = event.request.url.split("?");
   if (url.endsWith("/__swdev/revalidate")) {
-    console.info("[swdev:revalidate]");
-    event.respondWith(revalidateResponse(event));
+    // log("revalidate");
+    event.respondWith(handleRevalidateRequest(event));
   }
   if (TARGET_EXTENSIONS.some((ext) => url.endsWith(ext))) {
-    console.info("[swdev:handle]", event.request.url);
+    // log("handle with transform", event.request.url);
     event.respondWith(respondWithTransform(event));
   }
 });
@@ -31,7 +34,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 async function resolveContentByRequest(request: Request) {
   const res = await fetch(request);
   if (!res.ok) {
-    throw new Error(`faild to fetch: ${url}`);
+    throw new Error(`faild to fetch: ${request.url}`);
   }
   return res.text();
 }
@@ -44,19 +47,19 @@ async function resolveContent(url: string) {
   return res.text();
 }
 
-async function revalidateResponse(event: FetchEvent): Promise<Response> {
-  const data = await event.request.json();
+async function handleRevalidateRequest(event: FetchEvent): Promise<Response> {
+  const cmd: RevalidateCommand = await event.request.json();
   const cache = await caches.open(CACHE_VERSION);
   await Promise.all(
-    data.urls.map(async (url: string) => {
+    cmd.paths.map(async (path: string) => {
       try {
-        await cache.delete(url);
+        await cache.delete(path);
+        log("revalidated", path);
       } catch (err) {
         console.log(err);
       }
     })
   );
-  console.log("[swdev-worker:revalidate]", data.urls);
   return new Response(event.request.url, {
     // @ts-ignore
     mode: "no-cors",

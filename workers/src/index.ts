@@ -49,11 +49,9 @@ addEventListener('fetch', (event: FetchEvent) => {
   // }
   const url = event.request.url
   if (url.endsWith('/__swdev/revalidate')) {
-    console.info('[swdev:revalidate]')
     event.respondWith(revalidateResponse(event))
   }
   if (TARGET_EXTENSIONS.some((ext) => url.endsWith(ext))) {
-    console.info('[swdev:handle]', event.request.url)
     event.respondWith(respondWithTransform(event))
   }
 })

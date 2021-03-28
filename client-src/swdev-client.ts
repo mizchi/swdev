@@ -1,4 +1,9 @@
+import type { RevalidateCommand } from "../types.ts";
+
+import type { Command } from "../types";
 declare var navigator: any;
+
+const log = (...args: any) => console.info("[swdev-client]", ...args);
 
 async function setupServiceWorker() {
   if (navigator.serviceWorker == null) {
@@ -13,25 +18,23 @@ async function setupServiceWorker() {
   const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
   await navigator.serviceWorker.ready;
   installed = true;
-  setInterval(() => {
-    reg.update();
-  }, 60 * 1000);
+  setInterval(() => reg.update(), 60 * 1000);
 }
 
-export async function requestRevalidate(urls: string[]) {
-  const newUrls = urls.map((u) =>
+export async function requestRevalidate(cmd: RevalidateCommand) {
+  const newPaths = cmd.paths.map((u) =>
     u.startsWith("/") ? `${location.protocol}//${location.host}${u}` : u
   );
 
   const res = await fetch("/__swdev/revalidate", {
     method: "POST",
-    body: JSON.stringify({ urls: newUrls }),
+    body: JSON.stringify({ paths: newPaths }),
     headers: { "Content-Type": "application/json" },
   });
   if (!res.ok) {
-    console.log("[swdev:failed-revalidate]", newUrls);
+    log("revalidate", newPaths);
   } else {
-    console.log("[swdev:revalidate-requested]", newUrls);
+    log("revalidate-requested", newPaths);
   }
   return;
 }
@@ -39,22 +42,36 @@ export async function requestRevalidate(urls: string[]) {
 let dispose: any = null;
 
 async function run(url: string) {
-  dispose?.();
-  const mod = await import(url + "?" + Math.random());
+  const runId = Math.random().toString();
+  log("run", runId);
+
+  await dispose?.();
+  const mod = await import(url + "?" + runId);
   dispose = mod.default();
 }
 
-export async function start(url: string, opts: { wsPort?: number } = {}) {
-  console.log("[swdev] start");
+let started = false;
+export async function start(
+  url: string,
+  opts: { wsPort?: number; onFileChange?: () => void } = {}
+) {
+  if (started) return;
+  started = true;
+  log("start");
+
   await setupServiceWorker();
+
+  const onFileChange = opts.onFileChange ?? (() => run(url));
+
   // websocket revalidater
   const socket = new WebSocket(`ws://localhost:${opts.wsPort ?? 17777}/`);
   socket.onmessage = async (message) => {
-    const paths = JSON.parse(message.data);
-    await requestRevalidate(paths);
-    console.log("[swdev:revalidate] paths", paths);
-    await run(url);
-    // location.reload();
+    const cmd = JSON.parse(message.data) as Command;
+    if (cmd.type === "revalidate") {
+      await requestRevalidate(cmd);
+      log("revalidated", cmd);
+      onFileChange();
+    }
   };
 
   await run(url);
