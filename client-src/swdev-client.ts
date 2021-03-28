@@ -41,8 +41,10 @@ export async function requestRevalidate(cmd: RevalidateCommand) {
 
 let dispose: any = null;
 
-async function run(url: string) {
-  const runId = Math.random().toString();
+async function run(url: string, opts: { nocache?: boolean }) {
+  const runId = opts.nocache
+    ? `nocache-${Math.random()}`
+    : Math.random().toString();
   log("run", runId);
 
   await dispose?.();
@@ -53,7 +55,7 @@ async function run(url: string) {
 let started = false;
 export async function start(
   url: string,
-  opts: { wsPort?: number; onFileChange?: () => void } = {}
+  opts: { wsPort?: number; nocache?: boolean; onFileChange?: () => void } = {}
 ) {
   if (started) return;
   started = true;
@@ -61,18 +63,26 @@ export async function start(
 
   await setupServiceWorker();
 
-  const onFileChange = opts.onFileChange ?? (() => run(url));
+  const onFileChange =
+    opts.onFileChange ?? (() => run(url, { nocache: opts.nocache }));
 
-  // websocket revalidater
-  const socket = new WebSocket(`ws://localhost:${opts.wsPort ?? 17777}/`);
-  socket.onmessage = async (message) => {
-    const cmd = JSON.parse(message.data) as Command;
-    if (cmd.type === "revalidate") {
-      await requestRevalidate(cmd);
-      log("revalidated", cmd);
-      onFileChange();
-    }
-  };
+  try {
+    const socket = new WebSocket(`ws://localhost:${opts.wsPort ?? 17777}/`);
+    socket.onmessage = async (message) => {
+      const cmd = JSON.parse(message.data) as Command;
+      if (cmd.type === "revalidate") {
+        await requestRevalidate(cmd);
+        log("revalidated", cmd.paths);
+        onFileChange();
+      }
+      // TODO: revalidate all
+      if (cmd.type === "files") {
+        console.log("current-files", cmd.files);
+      }
+    };
+  } catch (err) {
+    // no socket
+  }
 
-  await run(url);
+  await run(url, { nocache: opts.nocache });
 }

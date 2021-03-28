@@ -91,8 +91,18 @@ async function transform(url: string, code: string): Promise<string> {
   }
 }
 
-async function createNewResponseWithCache(url: string, newCode: string) {
-  const output = await transform(url, newCode);
+async function createNewResponseWithCache(
+  url: string,
+  newCode: string,
+  saveCache: boolean = true
+) {
+  let output = await transform(url, newCode);
+  if (!saveCache) {
+    output = output.replace(
+      /import\s+(.*)\s+from\s+['"](\..*)['"]/gi,
+      `import $1 from "$2?nocache-${Math.random()}"`
+    );
+  }
   const modifiedResponse = new Response(output, {
     // @ts-ignore
     mode: "no-cors",
@@ -100,43 +110,42 @@ async function createNewResponseWithCache(url: string, newCode: string) {
       "Content-Type": "text/javascript",
     },
   });
-  const cache = await caches.open(CACHE_VERSION);
-  await cache.put(url, modifiedResponse.clone());
+  if (saveCache) {
+    const cache = await caches.open(CACHE_VERSION);
+    await cache.put(url, modifiedResponse.clone());
+  }
   return modifiedResponse;
 }
 
 async function respondWithTransform(event: FetchEvent): Promise<Response> {
-  const [url, _hash] = event.request.url.split("?");
-
-  const cache = await caches.open(CACHE_VERSION);
-
-  const newReq = new Request(url, {});
-
-  const matched = await cache.match(newReq);
-  if (matched) {
-    const text = await matched.text();
-    const newCode = text.replace(
-      /import\s+(.*)\s+from\s+['"](\..*)['"]/gi,
-      `import $1 from "$2?${Math.random()}"`
-    );
-
-    // console.log("[swdev:debug]", newCode);
-    return new Response(newCode, {
-      // @ts-ignore
-      mode: "no-cors",
-      status: 200,
-      headers: {
-        "Content-Type": "text/javascript",
-      },
-    });
+  const [url, hash] = event.request.url.split("?");
+  const useCache = !hash.startsWith("nocache");
+  if (useCache) {
+    const cache = await caches.open(CACHE_VERSION);
+    const matched = await cache.match(new Request(url));
+    if (matched) {
+      const text = await matched.text();
+      const newCode = text.replace(
+        /import\s+(.*)\s+from\s+['"](\..*)['"]/gi,
+        `import $1 from "$2?${Math.random()}"`
+      );
+      // console.log("[swdev:debug]", newCode);
+      return new Response(newCode, {
+        // @ts-ignore
+        mode: "no-cors",
+        status: 200,
+        headers: {
+          "Content-Type": "text/javascript",
+        },
+      });
+    }
   }
-  console.log("[swdev:worker] create new cache", event.request.url);
   const raw = await resolveContentByRequest(event.request);
-  return createNewResponseWithCache(url, raw);
+  return createNewResponseWithCache(url, raw, useCache);
 }
 
 const tsPreprocess = () => {
-  const script: Preprocessor = async ({ content, filename }) => {
+  const script: Preprocessor = async ({ content, filename }: any) => {
     const out = ts.transpile(content, {
       fileName: filename ?? "/$$.tsx",
       target: ts.ScriptTarget.ES2019,

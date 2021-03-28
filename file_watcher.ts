@@ -5,6 +5,9 @@ import {
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 import type { RevalidateCommand } from "./types.ts";
 
+import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
+import { join } from "https://deno.land/std@0.91.0/path/mod.ts";
+
 const log = (...args: any) => console.log("[swdev:file_watcher]", ...args);
 
 export function startFileWatcher(
@@ -22,6 +25,18 @@ export function startFileWatcher(
     log("connection created");
     const watcher = Deno.watchFs(watchTarget);
     let closed = false;
+    socket.on("message", async (message) => {
+      const cmd = JSON.parse(message);
+      if (cmd.type === "request-files") {
+        const files: string[] = [];
+        for await (const file of expandGlob(watchTarget + "/**/*")) {
+          if (file.isFile && !file.path.startsWith("__swdev")) {
+            files.push(file.path.replace(watchTarget, ""));
+          }
+        }
+        socket.send(JSON.stringify({ type: "files", files }));
+      }
+    });
     socket.on("close", () => {
       closed = true;
       log("connection closed");

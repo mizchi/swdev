@@ -7,6 +7,7 @@ import ts from "https://cdn.esm.sh/typescript";
 import { Plugin } from "https://cdn.esm.sh/rollup";
 import { exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
+import { minify } from "https://cdn.esm.sh/terser";
 
 // cache in tmp
 const TS_CODE_PATH = "/tmp/_tscode.js";
@@ -86,6 +87,18 @@ export const transform = () => {
         return out;
       }
       return;
+    },
+  } as Plugin;
+};
+
+export const compress = () => {
+  return {
+    name: "minify",
+    async transform(code: string, id: string) {
+      const out = await minify(code, {
+        module: true,
+      });
+      return out.code;
     },
   } as Plugin;
 };

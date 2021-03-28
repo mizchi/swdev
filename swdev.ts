@@ -1,10 +1,24 @@
 import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
+import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 
 const args = parse(Deno.args);
 const [task, second] = args._ as string[];
 
 switch (task) {
   case "init": {
+    const { initAssets } = await import("./commands.ts");
+    initAssets(second ?? ".");
+    break;
+  }
+
+  case "update": {
+    const target = second ?? ".";
+    await Deno.remove(path.join(Deno.cwd(), target, "__swdev-client.js")).catch(
+      () => 0
+    );
+    await Deno.remove(path.join(Deno.cwd(), target, "__swdev-worker.js")).catch(
+      () => 0
+    );
     const { initAssets } = await import("./commands.ts");
     initAssets(second ?? ".");
     break;

@@ -6,7 +6,8 @@ import { rollup } from "https://cdn.esm.sh/rollup";
 import { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";
 import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
-import { loadTs, transform } from "./plugins.ts";
+
+import { loadTs, transform, compress } from "./plugins.ts";
 
 async function prebuild(dir: string, override: boolean = false) {
   const sourceGen = await rollup({
@@ -40,6 +41,7 @@ async function prebuild(dir: string, override: boolean = false) {
         },
       }),
       transform(),
+      compress(),
     ],
   }).then((g: any) => g.generate({ format: "es" }));
   const clientGen = await rollup({
@@ -58,6 +60,7 @@ async function prebuild(dir: string, override: boolean = false) {
         },
       }),
       transform(),
+      compress(),
     ],
   }).then((g) => g.generate({ format: "es" }));
 
@@ -69,12 +72,48 @@ async function prebuild(dir: string, override: boolean = false) {
 }
 
 switch (task) {
-  case "dev:build": {
-    prebuild("example", true);
+  case "build": {
+    const { bundle } = await import("./bundler.ts");
+    bundle(second ?? ".");
     break;
   }
   case "pre-release": {
     prebuild("prebuilt", true);
+    break;
+  }
+  case "dev": {
+    await prebuild("playground", true);
+    const port = 7778;
+    const process = Deno.run({
+      cmd: [
+        "deno",
+        "run",
+        "--unstable",
+        "--allow-net",
+        `--allow-read=${Deno.cwd()}`,
+        "run_server.ts",
+        second ?? ".",
+        "-p",
+        port.toString(),
+      ],
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const endpoint = "ws://localhost:17778";
+    console.log(`[swdev:asset-server] http://localhost:${port}`);
+    console.log(`[swdev:ws] ${endpoint}`);
+
+    const { code } = await process.status();
+
+    if (code === 0) {
+      const rawOutput = await process.output();
+      await Deno.stdout.write(rawOutput);
+    } else {
+      const rawError = await process.stderrOutput();
+      const errorString = new TextDecoder().decode(rawError);
+      console.log(errorString);
+    }
+    Deno.exit(code);
     break;
   }
 }
