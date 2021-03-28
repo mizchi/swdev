@@ -17,14 +17,14 @@
   <script type="module">
     if (location.hostname === "localhost") {
       const { start } = await import("./__swdev-client.js");
-      start("./main.tsx", {wsPort: 17777});
+      start("./main.tsx", { wsPort: 17777 });
     } else {
       import("./main.bundle.js").then(mod => mod.default());
     }
   </script>
 </head>
 <body>
-  <div class="svelte-root"></div>
   <div class="react-root"></div>
+  <div class="svelte-root"></div>
 </body>
 </html>
