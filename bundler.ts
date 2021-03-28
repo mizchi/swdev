@@ -1,6 +1,6 @@
 import { rollup } from "https://cdn.esm.sh/rollup";
 import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
-import { denoLoader, svelte } from "./plugins.ts";
+import { denoLoader, svelte, compress } from "./plugins.ts";
 
 export async function bundle(entryPath: string) {
   const sourceGen = await rollup({
@@ -25,6 +25,7 @@ export async function bundle(entryPath: string) {
       }),
       denoLoader(),
       svelte(),
+      compress(),
     ],
   }).then((g: any) => g.generate({ format: "es" }));
   const outpath = entryPath.replace(/(.*)\.tsx?/, "$1.bundle.js");

@@ -4,7 +4,7 @@ import React from "https://cdn.esm.sh/react";
 import ReactDOM from "https://cdn.esm.sh/react-dom";
 
 function App() {
-  return <div>Hello react example2</div>;
+  return <div>Hello react example 2 </div>;
 }
 
 export default () => {
