@@ -11,7 +11,7 @@ export async function initAssets(dir: string) {
   const swdevClientOutpath = path.join(dir, "__swdev-client.js");
   const indexHtmlOutpath = path.join(dir, "index.html");
   const mainTsxOutpath = path.join(dir, "main.tsx");
-  
+
   const svelteAppOutpath = path.join(dir, "App.svelte");
   await copyIfNotExist(readmeOutpath, "prebuilt/README.md");
   await copyIfNotExist(gitIgnorePath, "prebuilt/.gitignore.raw");
@@ -20,6 +20,16 @@ export async function initAssets(dir: string) {
   await copyIfNotExist(indexHtmlOutpath, "prebuilt/index.html");
   await copyIfNotExist(mainTsxOutpath, "prebuilt/main.tsx");
   await copyIfNotExist(svelteAppOutpath, "prebuilt/App.svelte");
+}
+
+export async function updateSelf(dir: string) {
+  await ensureDir(dir);
+
+  const swdevWorkerOutpath = path.join(dir, "__swdev-worker.js");
+  const swdevClientOutpath = path.join(dir, "__swdev-client.js");
+
+  await copyIfNotExist(swdevClientOutpath, "prebuilt/__swdev-client.js");
+  await copyIfNotExist(swdevWorkerOutpath, "prebuilt/__swdev-worker.js");
 }
 
 const dev = false;

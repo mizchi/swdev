@@ -1,16 +1,27 @@
 # Swdev Project
 
+created by https://deno.land/x/swdev
+
 ## develop
 
 ```
-$ deno install -qAf --unstable https://deno.land/x/swdev/swdev.ts
 $ swdev serve
 ```
 
-## build
+## update swdev
+
+```
+$ deno install -qAf --unstable https://deno.land/x/swdev/swdev.ts
+$ swdev self-update
+```
+
+## build and release
 
 ```bash
-$ swdev build main.tsx
+$ swdev build
+
+## release
+# npm install -g netlify-cli
 # netlify deploy --prod -d .
 ```
 

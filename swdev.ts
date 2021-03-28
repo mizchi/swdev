@@ -11,7 +11,7 @@ switch (task) {
     break;
   }
 
-  case "update": {
+  case "self-update": {
     const target = second ?? ".";
     await Deno.remove(path.join(Deno.cwd(), target, "__swdev-client.js")).catch(
       () => 0
@@ -19,8 +19,9 @@ switch (task) {
     await Deno.remove(path.join(Deno.cwd(), target, "__swdev-worker.js")).catch(
       () => 0
     );
-    const { initAssets } = await import("./commands.ts");
-    initAssets(second ?? ".");
+    const { updateSelf } = await import("./commands.ts");
+    await updateSelf(second ?? ".");
+    console.log("[swdev] asset updated");
     break;
   }
 

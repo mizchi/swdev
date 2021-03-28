@@ -7,5 +7,5 @@
 </script>
 
 <div>
-  Hello Svelte - {x} - {Math.random()}
+  Hello Svelte 1 - {x} - {Math.random()}
 </div>

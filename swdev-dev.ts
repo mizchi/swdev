@@ -99,7 +99,7 @@ switch (task) {
       stdout: "piped",
       stderr: "piped",
     });
-    const endpoint = "ws://localhost:17778";
+    const endpoint = "ws://localhost:17777";
     console.log(`[swdev:asset-server] http://localhost:${port}`);
     console.log(`[swdev:ws] ${endpoint}`);
 
@@ -114,6 +114,28 @@ switch (task) {
       console.log(errorString);
     }
     Deno.exit(code);
-    break;
+  }
+  case "install": {
+    const process = Deno.run({
+      cmd: [
+        "deno",
+        "install",
+        "-qAf",
+        "--unstable",
+        "https://deno.land/x/swdev/swdev.ts",
+      ],
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { code } = await process.status();
+    if (code === 0) {
+      const rawOutput = await process.output();
+      await Deno.stdout.write(rawOutput);
+    } else {
+      const rawError = await process.stderrOutput();
+      const errorString = new TextDecoder().decode(rawError);
+      console.log(errorString);
+    }
+    Deno.exit(code);
   }
 }
