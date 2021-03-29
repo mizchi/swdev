@@ -1,5 +1,5 @@
 {
-  "exclude": ["playground", "*.svelte", "workers"],
+  "exclude": ["playground", "*.svelte", "tmp"],
   "compilerOptions": {
     "allowJs": true,
     "esModuleInterop": true,

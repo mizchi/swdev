@@ -2,16 +2,21 @@ import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 
 const args = parse(Deno.args);
-const [task, second] = args._ as string[];
+const [task, second] = args._ as [string, string | undefined];
 
 switch (task) {
   case "init": {
-    const { initAssets } = await import("./commands.ts");
-    initAssets(second ?? ".");
+    const prebuilt = await import("./prebuilt.ts");
+    const targetDir = path.join(Deno.cwd(), second ?? ".");
+    for (const [fpath, content] of Object.entries(prebuilt.default)) {
+      if (!fpath.startsWith("__swdev-")) {
+        await Deno.writeTextFile(path.join(targetDir, fpath), content);
+      }
+    }
     break;
   }
 
-  case "self-update": {
+  case "eject": {
     const target = second ?? ".";
     await Deno.remove(path.join(Deno.cwd(), target, "__swdev-client.js")).catch(
       () => 0
@@ -33,15 +38,17 @@ switch (task) {
 
   case "serve": {
     const port = 7777;
+
     const runner = args.local
-      ? "run_server.ts"
-      : "https://deno.land/x/swdev/run_server.ts";
+      ? "serve.ts"
+      : "https://deno.land/x/swdev/serve.ts";
     const process = Deno.run({
       cmd: [
         "deno",
         "run",
         "--allow-net",
         `--allow-read=${Deno.cwd()}`,
+        "--unstable",
         runner,
         second ?? ".",
         "-p",
@@ -50,6 +57,7 @@ switch (task) {
       stdout: "piped",
       stderr: "piped",
     });
+
     const endpoint = "ws://localhost:17777";
     console.log(`[swdev:asset-server] http://localhost:${port}`);
     console.log(`[swdev:ws] ${endpoint}`);

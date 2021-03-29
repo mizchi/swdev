@@ -9,6 +9,8 @@ import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 
 import { loadTs, transform, compress } from "./plugins.ts";
 
+const log = (...args: any) => console.log("[swdev-dev]", ...args);
+
 async function prebuild(dir: string, override: boolean = false) {
   const sourceGen = await rollup({
     input: "/swdev-worker.ts",
@@ -64,25 +66,53 @@ async function prebuild(dir: string, override: boolean = false) {
     ],
   }).then((g) => g.generate({ format: "es" }));
 
-  const swdevOutpath = path.join(dir, "__swdev-worker.js");
-  const swdevClientOutpath = path.join(dir, "__swdev-client.js");
-
-  await Deno.writeTextFile(swdevOutpath, sourceGen.output[0].code);
-  await Deno.writeTextFile(swdevClientOutpath, clientGen.output[0].code);
+  return {
+    "__swdev-worker.js": sourceGen.output[0].code,
+    "__swdev-client.js": clientGen.output[0].code,
+  };
 }
 
+import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
+import { ensureDir, exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
+
 switch (task) {
+  case "prebuild": {
+    // clear
+    await Deno.remove("tmp", { recursive: true });
+    await ensureDir("tmp");
+
+    // initialize
+    const prebuiltData: { [k: string]: string } = await prebuild("tmp", true);
+
+    // Add template to prebulitData
+    for await (const file of expandGlob("template/*")) {
+      if (file.isFile) {
+        prebuiltData[file.name] = await Deno.readTextFile(file.path);
+      }
+    }
+    await Deno.writeTextFile(
+      "prebuilt.ts",
+      `export default ${JSON.stringify(prebuiltData)}`
+    );
+    log("generate prebuilt.ts", Object.keys(prebuiltData));
+    break;
+  }
   case "build": {
     const { bundle } = await import("./bundler.ts");
     bundle(second ?? ".");
     break;
   }
-  case "pre-release": {
-    prebuild("prebuilt", true);
-    break;
-  }
   case "dev": {
-    await prebuild("playground", true);
+    const out = await prebuild("playground", true);
+    await Deno.writeTextFile(
+      "playground/__swdev-client.js",
+      out["__swdev-client.js"]
+    );
+    await Deno.writeTextFile(
+      "playground/__swdev-worker.js",
+      out["__swdev-worker.js"]
+    );
+
     const port = 7778;
     const process = Deno.run({
       cmd: [

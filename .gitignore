@@ -110,3 +110,4 @@ dist
 
 playground/*__swdev*
 *.bundle.js
+tmp
