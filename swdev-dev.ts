@@ -1,17 +1,16 @@
 import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
-const args = parse(Deno.args);
-const [task, second] = args._ as string[];
-
 import { rollup } from "https://cdn.esm.sh/rollup";
 import { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";
 import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
-import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
+import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
 
 import { loadTs, transform, compress } from "./plugins.ts";
 
+const args = parse(Deno.args);
+const [task, second] = args._ as string[];
 const log = (...args: any) => console.log("[swdev-dev]", ...args);
 
-async function prebuild(dir: string, override: boolean = false) {
+async function buildClientAssets() {
   const sourceGen = await rollup({
     input: "/swdev-worker.ts",
     onwarn(warn: any) {
@@ -72,17 +71,10 @@ async function prebuild(dir: string, override: boolean = false) {
   };
 }
 
-import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
-import { ensureDir, exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
-
 switch (task) {
-  case "prebuild": {
-    // clear
-    await Deno.remove("tmp", { recursive: true });
-    await ensureDir("tmp");
-
+  case "buildClientAssets": {
     // initialize
-    const prebuiltData: { [k: string]: string } = await prebuild("tmp", true);
+    const prebuiltData: { [k: string]: string } = await buildClientAssets();
 
     // Add template to prebulitData
     for await (const file of expandGlob("template/*")) {
@@ -103,16 +95,6 @@ switch (task) {
     break;
   }
   case "dev": {
-    const out = await prebuild("playground", true);
-    await Deno.writeTextFile(
-      "playground/__swdev-client.js",
-      out["__swdev-client.js"]
-    );
-    await Deno.writeTextFile(
-      "playground/__swdev-worker.js",
-      out["__swdev-worker.js"]
-    );
-
     const port = 7778;
     const process = Deno.run({
       cmd: [
