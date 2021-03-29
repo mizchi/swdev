@@ -1,5 +1,6 @@
 import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
+import { version } from "./version.ts";
 
 const args = parse(Deno.args);
 const [task, second] = args._ as [string, string | undefined];
@@ -35,13 +36,11 @@ switch (task) {
     bundle(second ?? "main.tsx");
     break;
   }
-
   case "serve": {
     const port = 7777;
-
     const runner = args.local
       ? "serve.ts"
-      : "https://deno.land/x/swdev/serve.ts";
+      : `https://deno.land/x/swdev@${version}/serve.ts`;
     const process = Deno.run({
       cmd: [
         "deno",
