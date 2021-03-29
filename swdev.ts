@@ -1,7 +1,7 @@
 import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
 import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
 import { version } from "./version.ts";
-import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.91.0/fs/mod.ts";
 
 const args = parse(Deno.args);
 const [task, second] = args._ as [string, string | undefined];
