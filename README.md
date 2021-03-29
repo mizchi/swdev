@@ -28,7 +28,6 @@ _CAUTION_: port:7777 register service-worker. Unregister service-worker after de
 ## Install
 
 ```
-
 $ swdev init swdev-app
 $ cd swdev-app
 $ swdev serve
@@ -50,6 +49,7 @@ $ swdev build main.tsx #=> main.bundle.js
 - [ ] Plugin system
 - [ ] Inline Editor
 - [ ] Extract rollup-deno-plugin
+- [ ] Refactor: deps.ts
 
 ## LICENSE
 

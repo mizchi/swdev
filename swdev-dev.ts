@@ -1,15 +1,16 @@
 import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
-const args = parse(Deno.args);
-const [task, second] = args._ as string[];
-
 import { rollup } from "https://cdn.esm.sh/rollup";
 import { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";
 import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
-import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
+import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
 
 import { loadTs, transform, compress } from "./plugins.ts";
 
-async function prebuild(dir: string, override: boolean = false) {
+const args = parse(Deno.args);
+const [task, second] = args._ as string[];
+const log = (...args: any) => console.log("[swdev-dev]", ...args);
+
+async function buildClientAssets() {
   const sourceGen = await rollup({
     input: "/swdev-worker.ts",
     onwarn(warn: any) {
@@ -64,25 +65,36 @@ async function prebuild(dir: string, override: boolean = false) {
     ],
   }).then((g) => g.generate({ format: "es" }));
 
-  const swdevOutpath = path.join(dir, "__swdev-worker.js");
-  const swdevClientOutpath = path.join(dir, "__swdev-client.js");
-
-  await Deno.writeTextFile(swdevOutpath, sourceGen.output[0].code);
-  await Deno.writeTextFile(swdevClientOutpath, clientGen.output[0].code);
+  return {
+    "__swdev-worker.js": sourceGen.output[0].code,
+    "__swdev-client.js": clientGen.output[0].code,
+  };
 }
 
 switch (task) {
+  case "buildClientAssets": {
+    // initialize
+    const prebuiltData: { [k: string]: string } = await buildClientAssets();
+
+    // Add template to prebulitData
+    for await (const file of expandGlob("template/*")) {
+      if (file.isFile) {
+        prebuiltData[file.name] = await Deno.readTextFile(file.path);
+      }
+    }
+    await Deno.writeTextFile(
+      "prebuilt.ts",
+      `export default ${JSON.stringify(prebuiltData)}`
+    );
+    log("generate prebuilt.ts", Object.keys(prebuiltData));
+    break;
+  }
   case "build": {
     const { bundle } = await import("./bundler.ts");
     bundle(second ?? ".");
     break;
   }
-  case "pre-release": {
-    prebuild("prebuilt", true);
-    break;
-  }
   case "dev": {
-    await prebuild("playground", true);
     const port = 7778;
     const process = Deno.run({
       cmd: [

@@ -7,6 +7,9 @@
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
+import type { ServeArgs } from "./types.ts";
+
+import prebuiltData from "./prebuilt.ts";
 import { extname, posix } from "https://deno.land/std@0.90.0/path/mod.ts";
 import {
   HTTPSOptions,
@@ -15,7 +18,6 @@ import {
   Response,
   ServerRequest,
 } from "https://deno.land/std@0.90.0/http/server.ts";
-import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
 import { assert } from "https://deno.land/std@0.90.0/_util/assert.ts";
 
 interface EntryInfo {
@@ -25,33 +27,7 @@ interface EntryInfo {
   name: string;
 }
 
-export interface FileServerArgs {
-  _: string[];
-  // -p --port
-  p?: number;
-  port?: number;
-  // --cors
-  cors?: boolean;
-  // --no-dir-listing
-  "dir-listing"?: boolean;
-  dotfiles?: boolean;
-  // --host
-  host?: string;
-  // -c --cert
-  c?: string;
-  cert?: string;
-  // -k --key
-  k?: string;
-  key?: string;
-  // -h --help
-  h?: boolean;
-  help?: boolean;
-}
-
 const encoder = new TextEncoder();
-
-const serverArgs = parse(Deno.args) as FileServerArgs;
-const target = posix.resolve(serverArgs._[0] ?? "");
 
 const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
@@ -116,6 +92,25 @@ function fileLenToString(len: number): string {
 }
 
 /**
+ * Returns an HTTP Response with the requested instance
+ * @param req The server request context used to cleanup the file handle
+ * @param content Instance on memory
+ */
+export async function serveInstance(
+  _req: ServerRequest,
+  content: string
+): Promise<Response> {
+  const headers = new Headers();
+  // headers.set("content-length", content.length.toString());
+  headers.set("content-type", "text/javascript");
+  return {
+    status: 200,
+    body: content,
+    headers,
+  };
+}
+
+/**
  * Returns an HTTP Response with the requested file as the body
  * @param req The server request context used to cleanup the file handle
  * @param filePath Path of the file to serve
@@ -142,62 +137,6 @@ export async function serveFile(
     body: file,
     headers,
   };
-}
-
-// TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
-async function serveDir(
-  req: ServerRequest,
-  dirPath: string
-): Promise<Response> {
-  const showDotfiles = serverArgs.dotfiles ?? true;
-  const dirUrl = `/${posix.relative(target, dirPath)}`;
-  const listEntry: EntryInfo[] = [];
-
-  // if ".." makes sense
-  if (dirUrl !== "/") {
-    const prevPath = posix.join(dirPath, "..");
-    const fileInfo = await Deno.stat(prevPath);
-    listEntry.push({
-      mode: modeToString(true, fileInfo.mode),
-      size: "",
-      name: "../",
-      url: posix.join(dirUrl, ".."),
-    });
-  }
-
-  for await (const entry of Deno.readDir(dirPath)) {
-    if (!showDotfiles && entry.name[0] === ".") {
-      continue;
-    }
-    const filePath = posix.join(dirPath, entry.name);
-    const fileUrl = posix.join(dirUrl, entry.name);
-    if (entry.name === "index.html" && entry.isFile) {
-      // in case index.html as dir...
-      return serveFile(req, filePath);
-    }
-    const fileInfo = await Deno.stat(filePath);
-    listEntry.push({
-      mode: modeToString(entry.isDirectory, fileInfo.mode),
-      size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
-      name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-      url: fileUrl,
-    });
-  }
-  listEntry.sort((a, b) =>
-    a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
-  );
-  const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
-  const page = encoder.encode(dirViewerTemplate(formattedDirUrl, listEntry));
-
-  const headers = new Headers();
-  headers.set("content-type", "text/html");
-
-  const res = {
-    status: 200,
-    body: page,
-    headers,
-  };
-  return res;
 }
 
 function serveFallback(_req: ServerRequest, e: Error): Promise<Response> {
@@ -235,92 +174,6 @@ function setCORS(res: Response): void {
     "access-control-allow-headers",
     "Origin, X-Requested-With, Content-Type, Accept, Range"
   );
-}
-
-function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
-  return html`
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <title>Deno File Server</title>
-        <style>
-          :root {
-            --background-color: #fafafa;
-            --color: rgba(0, 0, 0, 0.87);
-          }
-          @media (prefers-color-scheme: dark) {
-            :root {
-              --background-color: #303030;
-              --color: #fff;
-            }
-          }
-          @media (min-width: 960px) {
-            main {
-              max-width: 960px;
-            }
-            body {
-              padding-left: 32px;
-              padding-right: 32px;
-            }
-          }
-          @media (min-width: 600px) {
-            main {
-              padding-left: 24px;
-              padding-right: 24px;
-            }
-          }
-          body {
-            background: var(--background-color);
-            color: var(--color);
-            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-            font-weight: 400;
-            line-height: 1.43;
-            font-size: 0.875rem;
-          }
-          a {
-            color: #2196f3;
-            text-decoration: none;
-          }
-          a:hover {
-            text-decoration: underline;
-          }
-          table th {
-            text-align: left;
-          }
-          table td {
-            padding: 12px 24px 0 0;
-          }
-        </style>
-      </head>
-      <body>
-        <main>
-          <h1>Index of ${dirname}</h1>
-          <table>
-            <tr>
-              <th>Mode</th>
-              <th>Size</th>
-              <th>Name</th>
-            </tr>
-            ${entries.map(
-              (entry) =>
-                html`
-                  <tr>
-                    <td class="mode">${entry.mode}</td>
-                    <td>${entry.size}</td>
-                    <td>
-                      <a href="${entry.url}">${entry.name}</a>
-                    </td>
-                  </tr>
-                `
-            )}
-          </table>
-        </main>
-      </body>
-    </html>
-  `;
 }
 
 function html(strings: TemplateStringsArray, ...values: unknown[]): string {
@@ -371,15 +224,15 @@ function normalizeURL(url: string): string {
     : normalizedUrl;
 }
 
-function main(): void {
+export function startStaticServer(serverArgs: ServeArgs, target: string): void {
   const CORSEnabled = serverArgs.cors ? true : false;
   const port = serverArgs.port ?? serverArgs.p ?? 4507;
   const host = serverArgs.host ?? "0.0.0.0";
   const addr = `${host}:${port}`;
   const tlsOpts = {} as HTTPSOptions;
+
   tlsOpts.certFile = serverArgs.cert ?? serverArgs.c ?? "";
   tlsOpts.keyFile = serverArgs.key ?? serverArgs.k ?? "";
-  const dirListingEnabled = serverArgs["dir-listing"] ?? true;
 
   if (tlsOpts.keyFile || tlsOpts.certFile) {
     if (tlsOpts.keyFile === "" || tlsOpts.certFile === "") {
@@ -388,47 +241,36 @@ function main(): void {
     }
   }
 
-  if (serverArgs.h ?? serverArgs.help) {
-    console.log(`Deno File Server
-    Serves a local directory in HTTP.
-
-  INSTALL:
-    deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
-
-  USAGE:
-    file_server [path] [options]
-
-  OPTIONS:
-    -h, --help          Prints help information
-    -p, --port <PORT>   Set port
-    --cors              Enable CORS via the "Access-Control-Allow-Origin" header
-    --host     <HOST>   Hostname (default is 0.0.0.0)
-    -c, --cert <FILE>   TLS certificate file (enables TLS)
-    -k, --key  <FILE>   TLS key file (enables TLS)
-    --no-dir-listing    Disable directory listing
-    --no-dotfiles       Do not show dotfiles
-
-    All TLS options are required when one is provided.`);
-    Deno.exit();
-  }
-
   const handler = async (req: ServerRequest): Promise<void> => {
     let response: Response | undefined;
     try {
       const normalizedUrl = normalizeURL(req.url);
       let fsPath = posix.join(target, normalizedUrl);
-      if (fsPath.indexOf(target) !== 0) {
-        fsPath = target;
-      }
-      const fileInfo = await Deno.stat(fsPath);
-      if (fileInfo.isDirectory) {
-        if (dirListingEnabled) {
-          response = await serveDir(req, fsPath);
+      // handle __swdev
+      if (req.url.startsWith("/__swdev-")) {
+        const existFile = Deno.stat(fsPath)
+          .then(() => true)
+          .catch(() => false);
+        if (await existFile) {
+          response = await serveFile(req, fsPath);
         } else {
-          throw new Deno.errors.NotFound();
+          const t = req.url.substr(1) as keyof typeof prebuiltData;
+          if (prebuiltData[t]) {
+            response = await serveInstance(req, prebuiltData[t]);
+          } else {
+            throw new Error(`Not Found for ${t}`);
+          }
         }
       } else {
-        response = await serveFile(req, fsPath);
+        if (fsPath.indexOf(target) !== 0) {
+          fsPath = target;
+        }
+        const fileInfo = await Deno.stat(fsPath);
+        if (fileInfo.isDirectory) {
+          response = await serveFile(req, posix.join(fsPath, "index.html"));
+        } else {
+          response = await serveFile(req, fsPath);
+        }
       }
     } catch (e) {
       console.error(e.message);
@@ -458,5 +300,3 @@ function main(): void {
   }
   console.log(`${proto.toUpperCase()} server listening on ${proto}://${addr}/`);
 }
-
-export const startStaticServer = main;

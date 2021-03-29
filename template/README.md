@@ -1,7 +1,3 @@
-## Playground
-
----
-
 # Swdev Project
 
 created by https://deno.land/x/swdev
@@ -10,13 +6,6 @@ created by https://deno.land/x/swdev
 
 ```
 $ swdev serve
-```
-
-## update swdev
-
-```
-$ deno install -qAf --unstable https://deno.land/x/swdev/swdev.ts
-$ swdev self-update
 ```
 
 ## build and release
