@@ -7,3 +7,4 @@ echo "Start release for $version"
 deno run -A --unstable swdev-dev.ts prebuild
 git tag $version
 git push origin main --tags
+deno install -qAf --unstable https://deno.land/x/swdev@${version}/swdev.ts

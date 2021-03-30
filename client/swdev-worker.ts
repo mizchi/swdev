@@ -8,6 +8,7 @@ import {
 
 import ts from "https://cdn.esm.sh/typescript";
 import hash from "https://cdn.esm.sh/string-hash";
+import { rewriteWithRandomHash } from "./cache_buster.ts";
 
 const CACHE_VERSION = "v1";
 declare var self: any;
@@ -103,10 +104,7 @@ async function createNewResponseWithCache(
 ) {
   let output = await transform(url, newCode);
   if (!saveCache) {
-    output = output.replace(
-      /import\s+(.*)\s+from\s+['"](\..*)['"]/gi,
-      `import $1 from "$2?nocache-${Math.random()}"`
-    );
+    output = rewriteWithRandomHash(output);
   }
   const modifiedResponse = new Response(output, {
     // @ts-ignore
@@ -130,11 +128,7 @@ async function respondWithTransform(event: FetchEvent): Promise<Response> {
     const matched = await cache.match(new Request(url));
     if (matched) {
       const text = await matched.text();
-      const newCode = text.replace(
-        /import\s+(.*)\s+from\s+['"](\..*)['"]/gi,
-        `import $1 from "$2?${Math.random()}"`
-      );
-      // console.log("[swdev:debug]", newCode);
+      const newCode = rewriteWithRandomHash(text);
       return new Response(newCode, {
         // @ts-ignore
         mode: "no-cors",
