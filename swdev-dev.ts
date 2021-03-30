@@ -42,7 +42,7 @@ async function buildClientAssets() {
       virtualFs({
         files: {
           "/swdev-worker.ts": await Deno.readTextFile(
-            "./client-src/swdev-worker.ts"
+            "./client/swdev-worker.ts"
           ),
         },
       }),
@@ -58,7 +58,7 @@ async function buildClientAssets() {
       "bundle",
       "--unstable",
       "--no-check",
-      "client-src/swdev-client.ts",
+      "client/swdev-client.ts",
       "tmp/swdev-client.js",
     ],
   }).status();

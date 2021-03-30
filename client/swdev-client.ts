@@ -54,7 +54,7 @@ async function run(url: string, opts: { nocache?: boolean }) {
 let started = false;
 export async function start(
   url: string,
-  opts: { wsPort?: number; nocache?: boolean; onFileChange?: () => void } = {}
+  opts: { nocache?: boolean; onFileChange?: () => void } = {}
 ) {
   if (started) return;
   started = true;
@@ -66,7 +66,7 @@ export async function start(
     opts.onFileChange ?? (() => run(url, { nocache: opts.nocache }));
 
   try {
-    const socket = new WebSocket(`ws://localhost:${opts.wsPort ?? 17777}/`);
+    const socket = new WebSocket(`ws://localhost:17777/`);
     socket.onmessage = async (message) => {
       const cmd = JSON.parse(message.data) as Command;
       if (cmd.type === "revalidate") {

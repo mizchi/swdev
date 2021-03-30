@@ -16,7 +16,7 @@
     const dev = location.hostname === "localhost"
     if (dev) {
       const { start } = await import("/__swdev-client.js");
-      start("/main.tsx", { wsPort: 17777});
+      start("/main.tsx", { nocache: true });
     } else {
       import("/main.bundle.js").then(mod => mod.default());
     }

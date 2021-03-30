@@ -18,9 +18,10 @@
   <div class="react-root"></div>
 
   <script type="module">
-    if (location.hostname === "localhost") {
+    const isDev = location.hostname === "localhost"
+    if (isDev) {
       const { start } = await import("/__swdev-client.js");
-      start("/main.tsx", {wsPort: 17777, nocache: true});
+      start("/main.tsx", {});
     } else {
       import("/main.bundle.js").then(mod => mod.default());
     }
