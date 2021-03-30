@@ -60,4 +60,7 @@ switch (task) {
     Deno.exit(code);
     break;
   }
+  default: {
+    console.warn("Unkown command", task);
+  }
 }

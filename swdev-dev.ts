@@ -72,7 +72,7 @@ async function buildClientAssets() {
 }
 
 switch (task) {
-  case "buildClientAssets": {
+  case "prebuild": {
     // initialize
     const prebuiltData: { [k: string]: string } = await buildClientAssets();
 
@@ -149,5 +149,8 @@ switch (task) {
       console.log(errorString);
     }
     Deno.exit(code);
+  }
+  default: {
+    console.warn("Unkown command", task);
   }
 }
