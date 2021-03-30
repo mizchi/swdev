@@ -36,6 +36,7 @@ async function buildClientAssets() {
           if (id.startsWith("https://")) {
             return id;
           }
+          return `https://cdn.esm.sh/${id}`;
         },
       }),
       virtualFs({
@@ -58,7 +59,7 @@ async function buildClientAssets() {
       "--unstable",
       "--no-check",
       "client-src/swdev-client.ts",
-      "tmp/swdev-worker.js",
+      "tmp/swdev-client.js",
     ],
   }).status();
 
