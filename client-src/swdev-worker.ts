@@ -1,6 +1,8 @@
 import type { RevalidateCommand } from "./../types.ts";
 
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
+import { compile as svelteCompile } from "https://cdn.skypack.dev/svelte/compiler";
+
 import ts from "https://cdn.esm.sh/typescript";
 import hash from "https://cdn.esm.sh/string-hash";
 
@@ -78,14 +80,14 @@ async function transform(url: string, code: string): Promise<string> {
     });
     return header + result;
   } else if (url.endsWith(".svelte")) {
-    // const { code: preprocessed } = await preprocess(code, [tsPreprocess()], {
-    //   filename: "$.tsx",
-    // });
-    // const compiled = svelteCompile(preprocessed, {
-    //   css: false,
-    //   hydratable: true,
-    // });
-    // return header + compiled.js.code;
+    const { code: preprocessed } = await preprocess(code, [tsPreprocess()], {
+      filename: "$.tsx",
+    });
+    const compiled = svelteCompile(preprocessed, {
+      css: false,
+      hydratable: true,
+    });
+    return header + compiled.js.code;
   } else {
     throw new Error(`unknown extension: ${url}`);
   }
