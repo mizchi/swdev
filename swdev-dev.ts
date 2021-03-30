@@ -1,4 +1,12 @@
-import { parse, rollup, httpResolve, expandGlob, virtualFs, ensureDir } from "./deps.ts";
+import {
+  parse,
+  rollup,
+  httpResolve,
+  expandGlob,
+  virtualFs,
+  minify,
+  ensureDir,
+} from "./deps.ts";
 import { loadTs, transform, compress } from "./plugins.ts";
 
 const args = parse(Deno.args);
@@ -6,7 +14,8 @@ const [task, second] = args._ as string[];
 const log = (...args: any) => console.log("[swdev-dev]", ...args);
 
 async function buildClientAssets() {
-  const sourceGen = await rollup({
+  await ensureDir("tmp");
+  const workerBundle = await rollup({
     input: "/swdev-worker.ts",
     onwarn(warn: any) {
       if (warn.toString().includes("keyword is equivalent")) {
@@ -26,7 +35,6 @@ async function buildClientAssets() {
           if (id.startsWith("https://")) {
             return id;
           }
-          return `https://cdn.esm.sh/${id}`;
         },
       }),
       virtualFs({
@@ -40,29 +48,26 @@ async function buildClientAssets() {
       compress(),
     ],
   }).then((g: any) => g.generate({ format: "es" }));
-  const clientGen = await rollup({
-    input: "/swdev-client.ts",
-    onwarn(warn: any) {
-      if (warn.toString().includes("keyword is equivalent")) {
-        return;
-      }
-    },
-    plugins: [
-      virtualFs({
-        files: {
-          "/swdev-client.ts": await Deno.readTextFile(
-            "./client-src/swdev-client.ts"
-          ),
-        },
-      }),
-      transform(),
-      compress(),
+  const workerCode: string = workerBundle.output[0].code;
+
+  await Deno.run({
+    cmd: [
+      "deno",
+      "bundle",
+      "--unstable",
+      "--no-check",
+      "client-src/swdev-client.ts",
+      "tmp/swdev-worker.js",
     ],
-  }).then((g) => g.generate({ format: "es" }));
+  }).status();
+
+  const clientCode = await Deno.readTextFile("tmp/swdev-client.js");
+  const clientCodeMin = (await minify(clientCode, { module: true }))
+    .code as string;
 
   return {
-    "__swdev-worker.js": sourceGen.output[0].code,
-    "__swdev-client.js": clientGen.output.[0].code,
+    "__swdev-worker.js": workerCode,
+    "__swdev-client.js": clientCodeMin,
   };
 }
 

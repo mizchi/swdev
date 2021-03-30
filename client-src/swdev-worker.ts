@@ -1,8 +1,8 @@
 import type { RevalidateCommand } from "./../types.ts";
-import ts from "typescript";
-import hash from "string-hash";
-import { compile as svelteCompile, preprocess } from "svelte/compiler";
+
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
+import ts from "https://cdn.esm.sh/typescript";
+import hash from "https://cdn.esm.sh/string-hash";
 
 const CACHE_VERSION = "v1";
 declare var self: any;
@@ -78,14 +78,14 @@ async function transform(url: string, code: string): Promise<string> {
     });
     return header + result;
   } else if (url.endsWith(".svelte")) {
-    const { code: preprocessed } = await preprocess(code, [tsPreprocess()], {
-      filename: "$.tsx",
-    });
-    const compiled = svelteCompile(preprocessed, {
-      css: false,
-      hydratable: true,
-    });
-    return header + compiled.js.code;
+    // const { code: preprocessed } = await preprocess(code, [tsPreprocess()], {
+    //   filename: "$.tsx",
+    // });
+    // const compiled = svelteCompile(preprocessed, {
+    //   css: false,
+    //   hydratable: true,
+    // });
+    // return header + compiled.js.code;
   } else {
     throw new Error(`unknown extension: ${url}`);
   }
