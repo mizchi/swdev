@@ -8,7 +8,7 @@ import {
 
 import ts from "https://cdn.esm.sh/typescript";
 import hash from "https://cdn.esm.sh/string-hash";
-import { rewriteWithRandomHash } from "./cache_buster.ts";
+// import { rewriteWithRandomHash } from "./cache_buster.ts";
 
 const CACHE_VERSION = "v1";
 declare var self: any;
@@ -155,3 +155,17 @@ const tsPreprocess = () => {
     script,
   };
 };
+
+function rewriteWithRandomHash(code: string) {
+  const newCode = code
+    .replace(
+      /(import|export)\s+(.*)\s+from\s+['"](\..*)['"]/gi,
+      `$1 $2 from "$3?${Math.random()}"`
+    )
+    .replace(
+      /import\s+['"](\..*)['"]/,
+      // ts
+      `import "$1?${Math.random()}"`
+    );
+  return newCode;
+}
