@@ -1,7 +1,10 @@
 import type { RevalidateCommand } from "./../types.ts";
 
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
-import { compile as svelteCompile } from "https://cdn.skypack.dev/svelte/compiler";
+import {
+  compile as svelteCompile,
+  preprocess,
+} from "https://cdn.skypack.dev/svelte/compiler";
 
 import ts from "https://cdn.esm.sh/typescript";
 import hash from "https://cdn.esm.sh/string-hash";
