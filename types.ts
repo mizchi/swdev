@@ -3,6 +3,17 @@ export type GetFilesCommand = {
   files: string[];
 };
 
+export type ReadFileCommand = {
+  type: "read-file";
+  filepath: string;
+};
+
+export type WriteFileCommand = {
+  type: "write-file";
+  filepath: string;
+  content: string;
+};
+
 export type RevalidateCommand = {
   type: "revalidate";
   paths: string[];

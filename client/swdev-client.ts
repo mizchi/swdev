@@ -1,4 +1,5 @@
 import type { RevalidateCommand, Command } from "../types.ts";
+import { wrap } from "../rpc/websocket_adapter.ts";
 
 declare var navigator: any;
 
@@ -67,6 +68,7 @@ export async function start(
 
   try {
     const socket = new WebSocket(`ws://localhost:17777/`);
+    const api = wrap(socket);
     socket.onmessage = async (message) => {
       const cmd = JSON.parse(message.data) as Command;
       if (cmd.type === "revalidate") {
@@ -79,8 +81,14 @@ export async function start(
         console.log("current-files", cmd.files);
       }
     };
+    socket.onopen = async () => {
+      console.log("test call foo");
+      const result = await api.exec("foo");
+      console.log("user result", result);
+    };
   } catch (err) {
     // no socket
+    console.error(err);
   }
 
   await run(url, { nocache: opts.nocache });

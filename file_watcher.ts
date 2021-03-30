@@ -5,6 +5,8 @@ import {
   parse,
   expandGlob,
 } from "./deps.ts";
+
+import { expose } from "./rpc/websocket_server_adapter.ts";
 import type { ServeArgs, RevalidateCommand } from "./types.ts";
 
 const log = (...args: any) => console.log("[swdev:file_watcher]", ...args);
@@ -34,12 +36,23 @@ export function startFileWatcher(
           }
         }
         socket.send(JSON.stringify({ type: "files", files }));
+      } else if (cmd.type === "read-file") {
+        const filepath = cmd.filepath as string;
+        socket.send(JSON.stringify({ type: "read-files" }));
       }
     });
     socket.on("close", () => {
       closed = true;
       log("connection closed");
     });
+
+    expose(socket, {
+      async foo() {
+        if (closed) return;
+        return 1;
+      },
+    });
+
     // start file watch
     for await (const event of watcher) {
       if (closed) break;
