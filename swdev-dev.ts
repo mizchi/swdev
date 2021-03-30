@@ -8,6 +8,7 @@ import {
   ensureDir,
 } from "./deps.ts";
 import { loadTs, transform, compress } from "./plugins.ts";
+import { version } from "./version.ts";
 
 const args = parse(Deno.args);
 const [task, second] = args._ as string[];
@@ -134,7 +135,7 @@ switch (task) {
         "install",
         "-qAf",
         "--unstable",
-        "https://deno.land/x/swdev/swdev.ts",
+        `https://deno.land/x/swdev${version}/swdev.ts`,
       ],
       stdout: "piped",
       stderr: "piped",

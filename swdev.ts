@@ -29,6 +29,7 @@ switch (task) {
     const runner = args.local
       ? "serve.ts"
       : `https://deno.land/x/swdev@${version}/serve.ts`;
+    console.log("[swdev] run", runner);
     const process = Deno.run({
       cmd: [
         "deno",
