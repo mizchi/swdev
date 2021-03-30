@@ -19,10 +19,10 @@
 
   <script type="module">
     if (location.hostname === "localhost") {
-      const { start } = await import("./__swdev-client.js");
-      start("./main.tsx", {wsPort: 17777, nocache: true});
+      const { start } = await import("/__swdev-client.js");
+      start("/main.tsx", {wsPort: 17777, nocache: true});
     } else {
-      import("./main.bundle.js").then(mod => mod.default());
+      import("/main.bundle.js").then(mod => mod.default());
     }
   </script>
 </body>

@@ -1,9 +1,14 @@
+export type GetFilesCommand = {
+  type: "files";
+  files: string[];
+};
+
 export type RevalidateCommand = {
   type: "revalidate";
   paths: string[];
 };
 
-export type Command = RevalidateCommand;
+export type Command = RevalidateCommand | GetFilesCommand;
 
 export interface ServeArgs {
   _: string[];

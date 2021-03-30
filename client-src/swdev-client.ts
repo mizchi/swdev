@@ -1,6 +1,5 @@
-import type { RevalidateCommand } from "../types.ts";
+import type { RevalidateCommand, Command } from "../types.ts";
 
-import type { Command } from "../types";
 declare var navigator: any;
 
 const log = (...args: any) => console.info("[swdev-client]", ...args);

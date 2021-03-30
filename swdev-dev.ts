@@ -1,4 +1,4 @@
-import { parse, rollup, httpResolve, expandGlob, virtualFs } from "./deps.ts";
+import { parse, rollup, httpResolve, expandGlob, virtualFs, ensureDir } from "./deps.ts";
 import { loadTs, transform, compress } from "./plugins.ts";
 
 const args = parse(Deno.args);

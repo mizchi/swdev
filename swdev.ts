@@ -11,23 +11,10 @@ switch (task) {
     await ensureDir(targetDir);
     for (const [fpath, content] of Object.entries(prebuilt.default)) {
       if (!fpath.startsWith("__swdev-")) {
-        await Deno.writeTextFile(join(targetDir, fpath), content);
+        const outpath = join(targetDir, fpath).replace(/\.raw$/, "");
+        await Deno.writeTextFile(outpath, content);
       }
     }
-    break;
-  }
-
-  case "eject": {
-    const target = second ?? ".";
-    await Deno.remove(join(Deno.cwd(), target, "__swdev-client.js")).catch(
-      () => 0
-    );
-    await Deno.remove(join(Deno.cwd(), target, "__swdev-worker.js")).catch(
-      () => 0
-    );
-    const { updateSelf } = await import("./commands.ts");
-    await updateSelf(second ?? ".");
-    console.log("[swdev] asset updated");
     break;
   }
 
@@ -36,6 +23,7 @@ switch (task) {
     bundle(second ?? "main.tsx");
     break;
   }
+
   case "serve": {
     const port = 7777;
     const runner = args.local
@@ -60,9 +48,7 @@ switch (task) {
     const endpoint = "ws://localhost:17777";
     console.log(`[swdev:asset-server] http://localhost:${port}`);
     console.log(`[swdev:ws] ${endpoint}`);
-
     const { code } = await process.status();
-
     if (code === 0) {
       const rawOutput = await process.output();
       await Deno.stdout.write(rawOutput);
