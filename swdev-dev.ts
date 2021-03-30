@@ -135,7 +135,7 @@ switch (task) {
         "install",
         "-qAf",
         "--unstable",
-        `https://deno.land/x/swdev${version}/swdev.ts`,
+        `https://deno.land/x/swdev@${version}/swdev.ts`,
       ],
       stdout: "piped",
       stderr: "piped",

@@ -15,12 +15,12 @@ export const loadTs = () =>
   ({
     name: "ts-in-rollup",
     resolveId(id: string) {
-      if (id === "typescript") {
+      if (id === "https://cdn.esm.sh/typescript") {
         return id;
       }
     },
     async load(id: string) {
-      if (id === "typescript") {
+      if (id === "https://cdn.esm.sh/typescript") {
         if (tsCode != null) return tsCode;
         const code = await fetch(
           "https://cdn.jsdelivr.net/npm/typescript@4.2.3/lib/typescript.js"
