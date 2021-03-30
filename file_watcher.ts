@@ -1,11 +1,11 @@
 import {
   WebSocketClient,
   WebSocketServer,
-} from "https://deno.land/x/websocket@v0.1.0/mod.ts";
-import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
-import type { RevalidateCommand } from "./types.ts";
-
-import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
+  join,
+  parse,
+  expandGlob,
+} from "./deps.ts";
+import type { ServeArgs, RevalidateCommand } from "./types.ts";
 
 const log = (...args: any) => console.log("[swdev:file_watcher]", ...args);
 
@@ -15,7 +15,7 @@ export function startFileWatcher(
 ) {
   const cwd = opts.cwd;
   const target = opts.target ?? ".";
-  const watchTarget = path.join(cwd, target);
+  const watchTarget = join(cwd, target);
 
   wss.on("connection", async (socket: WebSocketClient) => {
     let timeoutId: number | null = null;
@@ -64,4 +64,12 @@ export function startFileWatcher(
   });
 
   log("started");
+}
+
+if (import.meta.main) {
+  const wss = new WebSocketServer(17777);
+  const serverArgs = parse(Deno.args) as ServeArgs;
+  const target = serverArgs._[0] ?? ".";
+  // console.log(serverArgs, target);
+  await startFileWatcher(wss, { cwd: Deno.cwd(), target });
 }

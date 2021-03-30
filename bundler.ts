@@ -1,5 +1,4 @@
-import { rollup } from "https://cdn.esm.sh/rollup";
-import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
+import { rollup, httpResolve } from "./deps.ts";
 import { denoLoader, svelte, compress } from "./plugins.ts";
 
 export async function bundle(entryPath: string) {

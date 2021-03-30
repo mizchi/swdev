@@ -1,9 +1,4 @@
-import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
-import { rollup } from "https://cdn.esm.sh/rollup";
-import { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";
-import { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
-import { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
-
+import { parse, rollup, httpResolve, expandGlob, virtualFs } from "./deps.ts";
 import { loadTs, transform, compress } from "./plugins.ts";
 
 const args = parse(Deno.args);
@@ -67,7 +62,7 @@ async function buildClientAssets() {
 
   return {
     "__swdev-worker.js": sourceGen.output[0].code,
-    "__swdev-client.js": clientGen.output[0].code,
+    "__swdev-client.js": clientGen.output.[0].code,
   };
 }
 

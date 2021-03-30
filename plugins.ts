@@ -3,11 +3,7 @@ import {
   compile as svelteCompile,
 } from "https://cdn.esm.sh/svelte/compiler";
 
-import ts from "https://cdn.esm.sh/typescript";
-import { Plugin } from "https://cdn.esm.sh/rollup";
-import { exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
-import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
-import { minify } from "https://cdn.esm.sh/terser";
+import { ts, RollupPlugin, exists, minify, join, dirname } from "./deps.ts";
 
 // cache in tmp
 const TS_CODE_PATH = "/tmp/_tscode.js";
@@ -38,7 +34,7 @@ export const loadTs = () =>
         return tsCode;
       }
     },
-  } as Plugin);
+  } as RollupPlugin);
 
 export const svelte = () =>
   ({
@@ -59,7 +55,7 @@ export const svelte = () =>
       }
       return;
     },
-  } as Plugin);
+  } as RollupPlugin);
 
 const log = (...args: any) => console.log("[deno-loader]", ...args);
 
@@ -88,7 +84,7 @@ export const transform = () => {
       }
       return;
     },
-  } as Plugin;
+  } as RollupPlugin;
 };
 
 export const compress = () => {
@@ -100,14 +96,14 @@ export const compress = () => {
       });
       return out.code;
     },
-  } as Plugin;
+  } as RollupPlugin;
 };
 
 export const denoLoader = () =>
   ({
     name: "deno-loader",
     async resolveId(id: string, importer: string | undefined) {
-      const realpath = importer ? path.join(path.dirname(importer), id) : id;
+      const realpath = importer ? join(dirname(importer), id) : id;
       // console.log("[deno-loader:resolve]", realpath);
       // console.log("deno-loader:resolveId", id, importer);
       if (await exists(realpath)) {
@@ -135,4 +131,4 @@ export const denoLoader = () =>
       }
       return;
     },
-  } as Plugin);
+  } as RollupPlugin);

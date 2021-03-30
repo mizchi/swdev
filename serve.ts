@@ -1,8 +1,7 @@
 import type { ServeArgs } from "./types.ts";
+import { WebSocketServer, parse } from "./deps.ts";
 import { startStaticServer } from "./static_server.ts";
 import { startFileWatcher } from "./file_watcher.ts";
-import { WebSocketServer } from "https://deno.land/x/websocket@v0.1.0/mod.ts";
-import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
 
 export async function serve(args: ServeArgs, target: string) {
   const wss = new WebSocketServer(17777);

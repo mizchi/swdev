@@ -1,7 +1,5 @@
-import { parse } from "https://deno.land/std@0.90.0/flags/mod.ts";
-import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
+import { parse, ensureDir, join } from "./deps.ts";
 import { version } from "./version.ts";
-import { ensureDir } from "https://deno.land/std@0.91.0/fs/mod.ts";
 
 const args = parse(Deno.args);
 const [task, second] = args._ as [string, string | undefined];
@@ -9,11 +7,11 @@ const [task, second] = args._ as [string, string | undefined];
 switch (task) {
   case "init": {
     const prebuilt = await import("./prebuilt.ts");
-    const targetDir = path.join(Deno.cwd(), second ?? ".");
+    const targetDir = join(Deno.cwd(), second ?? ".");
     await ensureDir(targetDir);
     for (const [fpath, content] of Object.entries(prebuilt.default)) {
       if (!fpath.startsWith("__swdev-")) {
-        await Deno.writeTextFile(path.join(targetDir, fpath), content);
+        await Deno.writeTextFile(join(targetDir, fpath), content);
       }
     }
     break;
@@ -21,10 +19,10 @@ switch (task) {
 
   case "eject": {
     const target = second ?? ".";
-    await Deno.remove(path.join(Deno.cwd(), target, "__swdev-client.js")).catch(
+    await Deno.remove(join(Deno.cwd(), target, "__swdev-client.js")).catch(
       () => 0
     );
-    await Deno.remove(path.join(Deno.cwd(), target, "__swdev-worker.js")).catch(
+    await Deno.remove(join(Deno.cwd(), target, "__swdev-worker.js")).catch(
       () => 0
     );
     const { updateSelf } = await import("./commands.ts");

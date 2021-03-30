@@ -1,18 +1,17 @@
-import { ensureDir, exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
-import * as path from "https://deno.land/std@0.91.0/path/mod.ts";
+import { ensureDir, exists, join } from "./deps.ts";
 import { getAsset } from "./utils.ts";
 
 export async function initAssets(dir: string) {
   await ensureDir(dir);
 
-  const readmeOutpath = path.join(dir, "README.md");
-  const gitIgnorePath = path.join(dir, ".gitignore");
-  const swdevWorkerOutpath = path.join(dir, "__swdev-worker.js");
-  const swdevClientOutpath = path.join(dir, "__swdev-client.js");
-  const indexHtmlOutpath = path.join(dir, "index.html");
-  const mainTsxOutpath = path.join(dir, "main.tsx");
+  const readmeOutpath = join(dir, "README.md");
+  const gitIgnorePath = join(dir, ".gitignore");
+  const swdevWorkerOutpath = join(dir, "__swdev-worker.js");
+  const swdevClientOutpath = join(dir, "__swdev-client.js");
+  const indexHtmlOutpath = join(dir, "index.html");
+  const mainTsxOutpath = join(dir, "main.tsx");
 
-  const svelteAppOutpath = path.join(dir, "App.svelte");
+  const svelteAppOutpath = join(dir, "App.svelte");
   await copyIfNotExist(readmeOutpath, "prebuilt/README.md");
   await copyIfNotExist(gitIgnorePath, "prebuilt/.gitignore.raw");
   await copyIfNotExist(swdevClientOutpath, "prebuilt/__swdev-client.js");
@@ -25,8 +24,8 @@ export async function initAssets(dir: string) {
 export async function updateSelf(dir: string) {
   await ensureDir(dir);
 
-  const swdevWorkerOutpath = path.join(dir, "__swdev-worker.js");
-  const swdevClientOutpath = path.join(dir, "__swdev-client.js");
+  const swdevWorkerOutpath = join(dir, "__swdev-worker.js");
+  const swdevClientOutpath = join(dir, "__swdev-client.js");
 
   await copyIfNotExist(swdevClientOutpath, "prebuilt/__swdev-client.js");
   await copyIfNotExist(swdevWorkerOutpath, "prebuilt/__swdev-worker.js");
