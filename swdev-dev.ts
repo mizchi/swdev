@@ -9,74 +9,93 @@ import {
 } from "./deps.ts";
 import { loadTs, transform, compress } from "./plugins.ts";
 import { version } from "./version.ts";
+import prebuilt from "./prebuilt.ts";
 
 const args = parse(Deno.args);
 const [task, second] = args._ as string[];
 const log = (...args: any) => console.log("[swdev-dev]", ...args);
+// import pre from './prebuilt.ts'
 
-async function buildClientAssets() {
+async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
   await ensureDir("tmp");
-  const workerBundle = await rollup({
-    input: "/swdev-worker.ts",
-    onwarn(warn: any) {
-      if (warn.toString().includes("keyword is equivalent")) {
-        return;
-      }
-    },
-    plugins: [
-      loadTs(),
-      httpResolve({
-        resolveIdFallback(id: string, importer: any) {
-          if (importer == null) {
-            return;
-          }
-          if (id.startsWith(".")) {
-            return;
-          }
-          if (id.startsWith("https://")) {
-            return id;
-          }
-          return `https://cdn.esm.sh/${id}`;
-        },
-      }),
-      virtualFs({
-        files: {
-          "/swdev-worker.ts": await Deno.readTextFile(
-            "./client/swdev-worker.ts"
-          ),
-        },
-      }),
-      transform(),
-      compress(),
-    ],
-  }).then((g: any) => g.generate({ format: "es" }));
-  const workerCode: string = workerBundle.output[0].code;
+  let workerCode: string;
+  if (opts.worker) {
+    const workerBundle = await rollup({
+      input: "/swdev-worker.ts",
+      onwarn(warn: any) {
+        if (warn.toString().includes("keyword is equivalent")) {
+          return;
+        }
+      },
+      plugins: [
+        loadTs(),
+        httpResolve({
+          resolveIdFallback(id: string, importer: any) {
+            if (importer == null) {
+              return;
+            }
+            if (id.startsWith(".")) {
+              return;
+            }
+            if (id.startsWith("https://")) {
+              return id;
+            }
+            return `https://cdn.esm.sh/${id}`;
+          },
+        }),
+        virtualFs({
+          files: {
+            "/swdev-worker.ts": await Deno.readTextFile(
+              "./client/swdev-worker.ts"
+            ),
+          },
+        }),
+        transform(),
+        compress(),
+      ],
+    }).then((g: any) => g.generate({ format: "es" }));
+    workerCode = workerBundle.output[0].code;
+    console.log("[dev]", "gen tmp/swdev-worker.js");
+    await Deno.writeTextFile("tmp/swdev-worker.js", workerCode);
+  } else {
+    console.log("[dev]", "use cache tmp/swdev-worker.js");
+    workerCode = await Deno.readTextFile("tmp/swdev-worker.js");
+  }
 
-  await Deno.run({
-    cmd: [
-      "deno",
-      "bundle",
-      "--unstable",
-      "--no-check",
-      "client/swdev-client.ts",
-      "tmp/swdev-client.js",
-    ],
-  }).status();
-
-  const clientCode = await Deno.readTextFile("tmp/swdev-client.js");
-  const clientCodeMin = (await minify(clientCode, { module: true }))
-    .code as string;
+  let clientCode: string;
+  if (opts.client) {
+    await Deno.run({
+      cmd: [
+        "deno",
+        "bundle",
+        "--unstable",
+        "--no-check",
+        "client/swdev-client.ts",
+        "tmp/swdev-client.js",
+      ],
+    }).status();
+    const code = await Deno.readTextFile("tmp/swdev-client.js");
+    clientCode = (await minify(code, { module: true })).code as string;
+    await Deno.writeTextFile("tmp/swdev-client.min.js", clientCode);
+    console.log("[dev]", "gen tmp/swdev-client.js");
+  } else {
+    console.log("[dev]", "use cache tmp/swdev-client.js");
+    clientCode = await Deno.readTextFile("tmp/swdev-client.min.js");
+  }
 
   return {
     "__swdev-worker.js": workerCode,
-    "__swdev-client.js": clientCodeMin,
+    "__swdev-client.js": clientCode,
   };
 }
 
 switch (task) {
   case "prebuild": {
     // initialize
-    const prebuiltData: { [k: string]: string } = await buildClientAssets();
+    const prebuiltData: { [k: string]: string } = await buildClientAssets({
+      client: args.client ?? false,
+      worker: args.worker ?? false,
+    });
 
     // Add template to prebulitData
     for await (const file of expandGlob("template/*")) {

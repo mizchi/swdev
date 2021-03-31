@@ -1,4 +1,7 @@
 import type { RevalidateCommand, Command } from "../types.ts";
+import type { ServerApiImpl } from "../server_api_impl.ts";
+// import type { RemoteCall } from "../rpc/websocket_adapter.ts";
+
 import { wrap } from "../rpc/websocket_adapter.ts";
 
 declare var navigator: any;
@@ -49,7 +52,7 @@ async function run(url: string, opts: { nocache?: boolean }) {
 
   await dispose?.();
   const mod = await import(url + "?" + runId);
-  dispose = mod.default();
+  dispose = await mod.default();
 }
 
 let started = false;
@@ -68,7 +71,7 @@ export async function start(
 
   try {
     const socket = new WebSocket(`ws://localhost:17777/`);
-    const api = wrap(socket);
+    const api = wrap<ServerApiImpl>(socket);
     socket.onmessage = async (message) => {
       const cmd = JSON.parse(message.data) as Command;
       if (cmd.type === "revalidate") {
@@ -83,9 +86,16 @@ export async function start(
     };
     socket.onopen = async () => {
       console.log("test call foo");
-      const result = await api.exec("foo");
+      // const result = await api.exec("readFile", "index.html");
+      const result = await api.exec("getFiles");
+
       console.log("user result", result);
+      // const result = await api.exec("readFile", "index.html");
+      // console.log("user result", "index.html", result);
     };
+
+    // @ts-ignore
+    globalThis.DenoProxy = api;
   } catch (err) {
     // no socket
     console.error(err);

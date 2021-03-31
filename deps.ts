@@ -20,6 +20,7 @@ export { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
 export { rollup } from "https://cdn.esm.sh/rollup";
 export { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
 
+// export type { Plugin as RollupPlugin } from "https://cdn.skypack.dev/rollup";
 export type { Plugin as RollupPlugin } from "https://cdn.esm.sh/rollup";
 export { default as ts } from "https://cdn.esm.sh/typescript";
 export { minify } from "https://cdn.esm.sh/terser";

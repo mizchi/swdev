@@ -21,6 +21,6 @@ const adapter: Adapter<WebSocket> = [
   (ctx) => ctx.terminate(),
 ];
 
-export type { WorkerApi, RemoteCall } from "./shared";
+export type { WorkerApi, RemoteCall } from "./shared.ts";
 export const expose = createExpose(adapter);
 export const wrap = createWrap(adapter);

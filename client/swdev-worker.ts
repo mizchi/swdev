@@ -1,6 +1,6 @@
 import type { RevalidateCommand } from "./../types.ts";
-
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
+
 import {
   compile as svelteCompile,
   preprocess,
@@ -9,6 +9,11 @@ import {
 import ts from "https://cdn.esm.sh/typescript";
 import hash from "https://cdn.esm.sh/string-hash";
 // import { rewriteWithRandomHash } from "./cache_buster.ts";
+
+type FetchEvent = {
+  request: Request;
+  respondWith(promise: Promise<any>): void;
+};
 
 const CACHE_VERSION = "v1";
 declare var self: any;

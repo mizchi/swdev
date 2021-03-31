@@ -7,7 +7,7 @@ const [task, second] = args._ as [string, string | undefined];
 switch (task) {
   case "init": {
     const prebuilt = await import("./prebuilt.ts");
-    const targetDir = join(Deno.cwd(), second ?? ".");
+    const targetDir = join(second ?? ".");
     await ensureDir(targetDir);
     for (const [fpath, content] of Object.entries(prebuilt.default)) {
       if (!fpath.startsWith("__swdev-")) {
@@ -30,11 +30,14 @@ switch (task) {
       ? "serve.ts"
       : `https://deno.land/x/swdev@${version}/serve.ts`;
     console.log("[swdev] run", runner);
+    // const target = join(Deno.cwd(), second ?? ".");
+    const target = second ?? ".";
     const process = Deno.run({
       cmd: [
         "deno",
         "run",
         "--allow-net",
+        ...(args.w || args.write ? [`--allow-write=${target}`] : []),
         `--allow-read=${Deno.cwd()}`,
         "--unstable",
         runner,
@@ -62,6 +65,6 @@ switch (task) {
     break;
   }
   default: {
-    console.warn("Unkown command", task);
+    console.warn("[swdev] Unknown command", task);
   }
 }

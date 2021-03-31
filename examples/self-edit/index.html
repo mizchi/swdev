@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SWDEV Playground</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+    }
+    * {
+      box-sizing: border-box;
+    }
+  </style>
+  <script type="module">
+    const dev = location.hostname === "localhost"
+    if (dev) {
+      const { start } = await import("/__swdev-client.js");
+      start("/main.tsx", { nocache: true });
+    } else {
+      import("/main.bundle.js").then(mod => mod.default());
+    }
+  </script>
+</head>
+<body>
+  <div class="root"></div>
+</body>
+</html>
