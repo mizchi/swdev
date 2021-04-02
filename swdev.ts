@@ -38,7 +38,7 @@ switch (task) {
         "run",
         ...(args["allow-run"] ? [`--allow-run`] : []),
         "--allow-net",
-        ...(args.w || args.write ? [`--allow-write=${target}`] : []),
+        ...(args["allow-write"] ? [`--allow-write=${target}`] : []),
         `--allow-read=${Deno.cwd()}`,
         "--unstable",
         runner,

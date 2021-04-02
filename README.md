@@ -43,9 +43,9 @@ $ swdev serve
 
 ## Experimental Read/Write via websocket`
 
-Run with `--write` flag.
+Run with `--allow-write` flag.
 
-`$ swdev serve --write`
+`$ swdev serve --allow-write`
 
 ```ts
 // declare to touch
@@ -55,11 +55,27 @@ declare const DenoProxy: {
 
 // READ
 console.log(await DenoProxy.exec("readTextFile", "index.html"));
-// WRITE: need -w
+// WRITE: need --allow-write
 await DenoProxy.exec("writeTextFile", "foo.ts", "export default 1;");
 ```
 
 These features are provided by `/__swdev_client.js`
+
+## Experimental Command Run`
+
+Run with `--allow-run` flag.
+
+`$ swdev serve --allow-run`
+
+```ts
+// declare to touch
+declare const DenoProxy: {
+  exec: any;
+};
+
+// RUN
+console.log(await DenoProxy.exec("run", ["ls"]));
+```
 
 ## Release
 
