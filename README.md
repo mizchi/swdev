@@ -19,9 +19,9 @@ _CAUTION_: port:7777 register service-worker. Unregister service-worker after de
 
 ## How to develop
 
-```
-$ deno run -A --unstable swdev-dev.ts prebuild --client --worker
-$ deno run -A --unstable serve.ts examples/react --local
+```bash
+$ deno run -A --unstable swdev-dev.ts prebuild --client --worker # build __swdev-client and __swdev-server
+$ deno run -A --unstable serve.ts examples/react --local # run
 ```
 
 ## Concepts
@@ -73,8 +73,8 @@ declare const DenoProxy: {
   exec: any;
 };
 
-// RUN
-console.log(await DenoProxy.exec("run", ["ls"]));
+// RUN commands
+await DenoProxy.exec("run", ["ls", "-al"]);
 ```
 
 ## Release
