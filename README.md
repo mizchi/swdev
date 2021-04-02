@@ -17,6 +17,13 @@ open http://localhost:7777
 
 _CAUTION_: port:7777 register service-worker. Unregister service-worker after develop.
 
+## How to develop
+
+```
+$ deno run -A --unstable swdev-dev.ts prebuild --client --worker
+$ deno run -A --unstable serve.ts examples/react --local
+```
+
 ## Concepts
 
 - Transform and cache in service-worker (`typescript` and `svelte`)

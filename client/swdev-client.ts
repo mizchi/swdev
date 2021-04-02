@@ -1,7 +1,5 @@
 import type { RevalidateCommand, Command } from "../types.ts";
 import type { ServerApiImpl } from "../server_api_impl.ts";
-// import type { RemoteCall } from "../rpc/websocket_adapter.ts";
-
 import { wrap } from "../rpc/websocket_adapter.ts";
 
 declare var navigator: any;
@@ -18,6 +16,12 @@ async function setupServiceWorker() {
       console.warn("[swdev] service-worker updated. reload it.");
     }
   });
+
+  navigator.serviceWorker.addEventListener("message", (ev) => {
+    log("message", ev);
+    // TODO: reload
+  });
+
   const reg = await navigator.serviceWorker.register("/__swdev-worker.js");
   await navigator.serviceWorker.ready;
   installed = true;
@@ -55,7 +59,25 @@ async function run(url: string, opts: { nocache?: boolean }) {
   dispose = await mod.default();
 }
 
+// init DenoProxy
+function initDenoProxySocket() {
+  const socket = new WebSocket(`ws://localhost:17777/`);
+  const api = wrap<ServerApiImpl>(socket);
+  // @ts-ignore
+  globalThis.DenoProxy = api;
+
+  // test getFiles
+  socket.onopen = async () => {
+    const result = await api.exec("run", ["ls"]);
+    log("init with", result);
+  };
+  return socket;
+}
+
 let started = false;
+
+const socket = initDenoProxySocket();
+
 export async function start(
   url: string,
   opts: { nocache?: boolean; onFileChange?: () => void } = {}
@@ -70,32 +92,22 @@ export async function start(
     opts.onFileChange ?? (() => run(url, { nocache: opts.nocache }));
 
   try {
-    const socket = new WebSocket(`ws://localhost:17777/`);
-    const api = wrap<ServerApiImpl>(socket);
     socket.onmessage = async (message) => {
-      const cmd = JSON.parse(message.data) as Command;
-      if (cmd.type === "revalidate") {
-        await requestRevalidate(cmd);
-        log("revalidated", cmd.paths);
-        onFileChange();
-      }
-      // TODO: revalidate all
-      if (cmd.type === "files") {
-        console.log("current-files", cmd.files);
+      try {
+        const cmd = JSON.parse(message.data) as Command;
+        if (cmd.type === "revalidate") {
+          await requestRevalidate(cmd);
+          log("revalidated", cmd.paths);
+          onFileChange();
+        }
+        // TODO: revalidate all
+        if (cmd.type === "files") {
+          console.log("current-files", cmd.files);
+        }
+      } catch (e) {
+        console.error(e);
       }
     };
-    socket.onopen = async () => {
-      console.log("test call foo");
-      // const result = await api.exec("readFile", "index.html");
-      const result = await api.exec("getFiles");
-
-      console.log("user result", result);
-      // const result = await api.exec("readFile", "index.html");
-      // console.log("user result", "index.html", result);
-    };
-
-    // @ts-ignore
-    globalThis.DenoProxy = api;
   } catch (err) {
     // no socket
     console.error(err);

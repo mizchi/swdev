@@ -15,9 +15,20 @@ export function createApi(watchRoot: string) {
       const fpath = join(watchRoot, filepath);
       return Deno.readTextFile(fpath);
     },
+    // need allow-write
     async writeTextFile(filepath: string, content: string) {
       const fpath = join(watchRoot, filepath);
       return Deno.writeTextFile(fpath, content);
+    },
+    // need --allow-run
+    async run(cmd: string[]) {
+      const p = Deno.run({
+        cwd: watchRoot,
+        cmd,
+        stdin: "piped",
+        stdout: "piped",
+      });
+      return new TextDecoder().decode(await p.output());
     },
   };
 }

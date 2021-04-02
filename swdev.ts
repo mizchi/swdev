@@ -36,6 +36,7 @@ switch (task) {
       cmd: [
         "deno",
         "run",
+        ...(args["allow-run"] ? [`--allow-run`] : []),
         "--allow-net",
         ...(args.w || args.write ? [`--allow-write=${target}`] : []),
         `--allow-read=${Deno.cwd()}`,
