@@ -1,4 +1,4 @@
-export const version = "0.4.0";
+export const version = "0.4.1";
 
 import { parse } from "./deps.ts";
 
