@@ -77,32 +77,16 @@ declare const DenoProxy: {
 await DenoProxy.exec("run", ["ls", "-al"]);
 ```
 
-## Release
+## Release build
 
-```
-
+```bash
 ## Build entry point
-
-$ swdev build main.tsx #=> main.bundle.js
+$ swdev build #=> main.bundle.js
 
 ## Deploy assets
-
 # netlify deploy --prod -d .
-
 ```
-
-## TODO
-
-- [ ] Generate importmaps
-- [ ] Plugin system
-- [ ] Inline Editor
-- [ ] Extract rollup-deno-plugin
-- [ ] Refactor: deps.ts
 
 ## LICENSE
 
 MIT
-
-```
-
-```
