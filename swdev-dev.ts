@@ -20,43 +20,19 @@ async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
   await ensureDir("tmp");
   let workerCode: string;
   if (opts.worker) {
-    const workerBundle = await rollup({
-      input: "/swdev-worker.ts",
-      onwarn(warn: any) {
-        if (warn.toString().includes("keyword is equivalent")) {
-          return;
-        }
-      },
-      plugins: [
-        loadTs(),
-        httpResolve({
-          resolveIdFallback(id: string, importer: any) {
-            if (importer == null) {
-              return;
-            }
-            if (id.startsWith(".")) {
-              return;
-            }
-            if (id.startsWith("https://")) {
-              return id;
-            }
-            return `https://cdn.esm.sh/${id}`;
-          },
-        }),
-        virtualFs({
-          files: {
-            "/swdev-worker.ts": await Deno.readTextFile(
-              "./client/swdev-worker.ts"
-            ),
-          },
-        }),
-        transform(),
-        compress(),
+    await Deno.run({
+      cmd: [
+        "deno",
+        "bundle",
+        "--unstable",
+        "--no-check",
+        "client/swdev-worker.ts",
+        "tmp/swdev-worker.js",
       ],
-    }).then((g: any) => g.generate({ format: "es" }));
-    workerCode = workerBundle.output[0].code;
+    }).status();
+    const code = await Deno.readTextFile("tmp/swdev-worker.js");
+    workerCode = (await minify(code, { module: true })).code as string;
     console.log("[dev]", "gen tmp/swdev-worker.js");
-    await Deno.writeTextFile("tmp/swdev-worker.js", workerCode);
   } else {
     console.log("[dev]", "use cache tmp/swdev-worker.js");
     workerCode = await Deno.readTextFile("tmp/swdev-worker.js");
@@ -74,6 +50,7 @@ async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
         "tmp/swdev-client.js",
       ],
     }).status();
+
     const code = await Deno.readTextFile("tmp/swdev-client.js");
     clientCode = (await minify(code, { module: true })).code as string;
     await Deno.writeTextFile("tmp/swdev-client.min.js", clientCode);
