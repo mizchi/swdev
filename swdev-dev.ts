@@ -2,9 +2,8 @@ import { parse, expandGlob, minify, ensureDir } from "./deps.ts";
 import { version } from "./version.ts";
 
 const args = parse(Deno.args);
-const [task, second] = args._ as string[];
+const [task] = args._ as string[];
 const log = (...args: any) => console.log("[swdev-dev]", ...args);
-// import pre from './prebuilt.ts'
 
 async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
   await ensureDir("tmp");
@@ -20,8 +19,7 @@ async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
         "tmp/swdev-worker.js",
       ],
     }).status();
-    const code = await Deno.readTextFile("tmp/swdev-worker.js");
-    workerCode = (await minify(code, { module: true })).code as string;
+    workerCode = await Deno.readTextFile("tmp/swdev-worker.js");
     console.log("[dev]", "gen tmp/swdev-worker.js");
   } else {
     console.log("[dev]", "use cache tmp/swdev-worker.js");
@@ -41,8 +39,7 @@ async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
       ],
     }).status();
 
-    const code = await Deno.readTextFile("tmp/swdev-client.js");
-    clientCode = (await minify(code, { module: true })).code as string;
+    clientCode = await Deno.readTextFile("tmp/swdev-client.js");
     await Deno.writeTextFile("tmp/swdev-client.js", clientCode);
     console.log("[dev]", "gen tmp/swdev-client.js");
   } else {
@@ -51,8 +48,10 @@ async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
   }
 
   return {
-    "__swdev-worker.js": workerCode,
-    "__swdev-client.js": clientCode,
+    "__swdev-worker.js": (await minify(workerCode, { module: true }))
+      .code as string,
+    "__swdev-client.js": (await minify(clientCode, { module: true }))
+      .code as string,
   };
 }
 
@@ -76,44 +75,6 @@ switch (task) {
     );
     log("generate prebuilt.ts", Object.keys(prebuiltData));
     break;
-  }
-  case "build": {
-    const { bundle } = await import("./bundler.ts");
-    bundle(second ?? ".");
-    break;
-  }
-  case "dev": {
-    const port = 7778;
-    const process = Deno.run({
-      cmd: [
-        "deno",
-        "run",
-        "--unstable",
-        "--allow-net",
-        `--allow-read=${Deno.cwd()}`,
-        "run_server.ts",
-        second ?? ".",
-        "-p",
-        port.toString(),
-      ],
-      stdout: "piped",
-      stderr: "piped",
-    });
-    const endpoint = "ws://localhost:17777";
-    console.log(`[swdev:asset-server] http://localhost:${port}`);
-    console.log(`[swdev:ws] ${endpoint}`);
-
-    const { code } = await process.status();
-
-    if (code === 0) {
-      const rawOutput = await process.output();
-      await Deno.stdout.write(rawOutput);
-    } else {
-      const rawError = await process.stderrOutput();
-      const errorString = new TextDecoder().decode(rawError);
-      console.log(errorString);
-    }
-    Deno.exit(code);
   }
   case "install": {
     const process = Deno.run({

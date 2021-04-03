@@ -5,7 +5,7 @@ import {
   preprocess,
 } from "https://cdn.skypack.dev/svelte/compiler";
 import hash from "https://cdn.esm.sh/string-hash";
-import { Env, CACHE_VERSION } from "./env.ts";
+import { Env } from "./env.ts";
 
 type FetchEvent = {
   request: Request;
@@ -17,8 +17,8 @@ export function createTransformHandler(env: Env) {
     const [url, hash] = event.request.url.split("?");
     const useCache = !hash?.startsWith("nocache");
     if (useCache) {
-      const cache = await env.caches.open(CACHE_VERSION);
-      const matched = await cache.match(new Request(url));
+      const store = await env.getStore();
+      const matched = await store.match(new Request(url));
       if (matched) {
         const text = await matched.text();
         const newCode = rewriteWithRandomHash(text);
@@ -75,8 +75,8 @@ async function createNewResponseWithCache(
     },
   });
   if (saveCache) {
-    const cache = await env.caches.open(CACHE_VERSION);
-    await cache.put(url, modifiedResponse.clone());
+    const store = await env.getStore();
+    await store.put(url, modifiedResponse.clone());
   }
   return modifiedResponse;
 }

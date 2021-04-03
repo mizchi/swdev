@@ -17,7 +17,7 @@ async function setupServiceWorker() {
     }
   });
 
-  navigator.serviceWorker.addEventListener("message", (ev) => {
+  navigator.serviceWorker.addEventListener("message", (ev: any) => {
     log("message", ev);
     // TODO: reload
   });
