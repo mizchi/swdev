@@ -10,7 +10,9 @@ async function _init() {
 
 export async function transform(
   code: string,
-  opts: { jsc: { parser: ParserConfig; transform: TransformConfig } }
+  opts: {
+    jsc: { parser: ParserConfig; transform: TransformConfig; tsc: string };
+  }
 ): Promise<{ code: string }> {
   await _init();
   return transformSync(code, opts);
@@ -19,6 +21,7 @@ export async function transform(
 export async function transpileDefault(code: string) {
   return await transform(code, {
     jsc: {
+      // @ts-ignore
       target: "es2019",
       parser: {
         syntax: "typescript",
