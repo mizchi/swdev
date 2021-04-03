@@ -56,7 +56,7 @@ async function run(url: string, opts: { nocache?: boolean }) {
 
   await dispose?.();
   const mod = await import(url + "?" + runId);
-  dispose = await mod.default();
+  dispose = await mod?.default?.();
 }
 
 // init DenoProxy

@@ -1,19 +1,7 @@
 import type { RevalidateCommand } from "./../types.ts";
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
 
-import { parse, print } from "https://x.nest.land/swc@0.0.6/mod.ts";
-
-function transpile(code: string) {
-  const ast = parse(code, {
-    syntax: "typescript",
-    target: "es2019",
-    tsx: true,
-  });
-
-  return print(ast, {
-    minify: false,
-  }).code;
-}
+import { transpileDefault } from "../swc_wasm/mod.ts";
 
 import {
   compile as svelteCompile,
@@ -97,8 +85,8 @@ async function transform(url: string, code: string): Promise<string> {
   const newHash = hash(code);
   const header = `/* SWDEV-HASH:${newHash} */\n`;
   if (url.endsWith(".ts") || url.endsWith(".tsx")) {
-    const result = transpile(code);
-    return header + result;
+    const result = await transpileDefault(code);
+    return header + result.code;
   } else if (url.endsWith(".svelte")) {
     const { code: preprocessed } = await preprocess(code, [tsPreprocess()], {
       filename: "$.tsx",
@@ -161,8 +149,8 @@ async function respondWithTransform(event: FetchEvent): Promise<Response> {
 
 const tsPreprocess = () => {
   const script: Preprocessor = async ({ content, filename }: any) => {
-    const out = transpile(content);
-    return { code: out };
+    const out = await transpileDefault(content);
+    return { code: out.code };
   };
   return {
     script,
