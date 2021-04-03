@@ -2,6 +2,7 @@ import type { RevalidateCommand } from "./../types.ts";
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
 
 import { transpileDefault } from "../swc_wasm/mod.ts";
+import { rewriteWithRandomHash } from "./cache_buster.ts";
 
 import {
   compile as svelteCompile,
@@ -156,17 +157,3 @@ const tsPreprocess = () => {
     script,
   };
 };
-
-function rewriteWithRandomHash(code: string) {
-  const newCode = code
-    .replace(
-      /(import|export)\s+(.*)\s+from\s+['"](\..*)['"]/gi,
-      `$1 $2 from "$3?${Math.random()}"`
-    )
-    .replace(
-      /import\s+['"](\..*)['"]/,
-      // ts
-      `import "$1?${Math.random()}"`
-    );
-  return newCode;
-}

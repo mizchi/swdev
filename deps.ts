@@ -24,3 +24,4 @@ export { minify } from "https://cdn.esm.sh/terser";
 export type { WebSocketClient } from "https://deno.land/x/websocket@v0.1.0/mod.ts";
 export { WebSocketServer } from "https://deno.land/x/websocket@v0.1.0/mod.ts";
 export { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";
+export { default as ts } from "https://cdn.esm.sh/typescript";

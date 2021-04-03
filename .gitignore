@@ -110,3 +110,4 @@ dist
 
 *.bundle.js
 tmp
+swc_wasm/target

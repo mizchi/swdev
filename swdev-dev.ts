@@ -1,15 +1,5 @@
-import {
-  parse,
-  rollup,
-  httpResolve,
-  expandGlob,
-  virtualFs,
-  minify,
-  ensureDir,
-} from "./deps.ts";
-import { loadTs, transform, compress } from "./plugins.ts";
+import { parse, expandGlob, minify, ensureDir } from "./deps.ts";
 import { version } from "./version.ts";
-import prebuilt from "./prebuilt.ts";
 
 const args = parse(Deno.args);
 const [task, second] = args._ as string[];
@@ -26,7 +16,7 @@ async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
         "bundle",
         "--unstable",
         "--no-check",
-        "client/swdev-worker.ts",
+        "browser/swdev-worker.ts",
         "tmp/swdev-worker.js",
       ],
     }).status();
@@ -46,18 +36,18 @@ async function buildClientAssets(opts: { client: boolean; worker: boolean }) {
         "bundle",
         "--unstable",
         "--no-check",
-        "client/swdev-client.ts",
+        "browser/swdev-client.ts",
         "tmp/swdev-client.js",
       ],
     }).status();
 
     const code = await Deno.readTextFile("tmp/swdev-client.js");
     clientCode = (await minify(code, { module: true })).code as string;
-    await Deno.writeTextFile("tmp/swdev-client.min.js", clientCode);
+    await Deno.writeTextFile("tmp/swdev-client.js", clientCode);
     console.log("[dev]", "gen tmp/swdev-client.js");
   } else {
     console.log("[dev]", "use cache tmp/swdev-client.js");
-    clientCode = await Deno.readTextFile("tmp/swdev-client.min.js");
+    clientCode = await Deno.readTextFile("tmp/swdev-client.js");
   }
 
   return {
