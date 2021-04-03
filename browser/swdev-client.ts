@@ -67,10 +67,10 @@ function initDenoProxySocket() {
   globalThis.DenoProxy = api;
 
   // test getFiles
-  socket.onopen = async () => {
-    const result = await api.exec("run", ["ls"]);
-    log("init with", result);
-  };
+  // socket.onopen = async () => {
+  //   const result = await api.exec("run", ["ls"]);
+  //   log("init with", result);
+  // };
   return socket;
 }
 
