@@ -19,12 +19,8 @@ export { ensureDir, exists } from "https://deno.land/std@0.91.0/fs/mod.ts";
 export { expandGlob } from "https://deno.land/std@0.91.0/fs/mod.ts";
 export { rollup } from "https://cdn.esm.sh/rollup";
 export { httpResolve } from "https://cdn.esm.sh/rollup-plugin-http-resolve";
-
-// export type { Plugin as RollupPlugin } from "https://cdn.skypack.dev/rollup";
 export type { Plugin as RollupPlugin } from "https://cdn.esm.sh/rollup";
-export { default as ts } from "https://cdn.esm.sh/typescript";
 export { minify } from "https://cdn.esm.sh/terser";
-
 export type { WebSocketClient } from "https://deno.land/x/websocket@v0.1.0/mod.ts";
 export { WebSocketServer } from "https://deno.land/x/websocket@v0.1.0/mod.ts";
 export { virtualFs } from "https://cdn.esm.sh/rollup-plugin-virtual-fs";

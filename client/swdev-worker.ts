@@ -1,12 +1,15 @@
 import type { RevalidateCommand } from "./../types.ts";
 import type { Preprocessor } from "svelte/types/compiler/preprocess/types";
 
+import { transpileDefault } from "../swc_wasm/mod.ts";
+
 import {
   compile as svelteCompile,
   preprocess,
 } from "https://cdn.skypack.dev/svelte/compiler";
 
-import ts from "https://cdn.esm.sh/typescript";
+// import ts from "https://cdn.esm.sh/typescript";
+
 import hash from "https://cdn.esm.sh/string-hash";
 // import { rewriteWithRandomHash } from "./cache_buster.ts";
 
@@ -82,12 +85,8 @@ async function transform(url: string, code: string): Promise<string> {
   const newHash = hash(code);
   const header = `/* SWDEV-HASH:${newHash} */\n`;
   if (url.endsWith(".ts") || url.endsWith(".tsx")) {
-    const result = ts.transpile(code, {
-      target: ts.ScriptTarget.ES2019,
-      module: ts.ModuleKind.ESNext,
-      jsx: ts.JsxEmit.React,
-    });
-    return header + result;
+    const result = await transpileDefault(code);
+    return header + result.code;
   } else if (url.endsWith(".svelte")) {
     const { code: preprocessed } = await preprocess(code, [tsPreprocess()], {
       filename: "$.tsx",
@@ -150,11 +149,8 @@ async function respondWithTransform(event: FetchEvent): Promise<Response> {
 
 const tsPreprocess = () => {
   const script: Preprocessor = async ({ content, filename }: any) => {
-    const out = ts.transpile(content, {
-      fileName: filename ?? "/$$.tsx",
-      target: ts.ScriptTarget.ES2019,
-    });
-    return { code: out };
+    const out = await transpileDefault(content);
+    return { code: out.code };
   };
   return {
     script,
